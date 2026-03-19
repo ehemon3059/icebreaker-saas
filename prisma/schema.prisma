@@ -1,0 +1,344 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Pooled (port 6543) — for app queries
+  directUrl = env("DIRECT_URL") // Direct (port 5432) — for migrations only
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ENUMS — database-level validation, autocomplete, no typos
+// ═══════════════════════════════════════════════════════════════
+
+enum LeadSource {
+  manual
+  csv
+}
+
+enum MessageTone {
+  professional
+  casual
+  bold
+}
+
+enum CampaignStatus {
+  draft
+  processing
+  completed
+  failed
+}
+
+enum JobStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+// ═══════════════════════════════════════════════════════════════
+// USER & BILLING
+// ═══════════════════════════════════════════════════════════════
+
+/// Core user account. The `id` field MUST match the UUID from
+/// Supabase Auth (auth.users.id) — do NOT use cuid() here.
+///
+/// Credit system: creditsUsed is checked before every generation.
+/// A monthly cron resets creditsUsed → 0 and updates lastResetDate.
+model User {
+  id        String  @id // ← Supabase Auth UUID, NOT auto-generated
+  email     String  @unique
+  name      String?
+  avatarUrl String?
+
+  // ── Plan & Credits ──
+  subscriptionTier String    @default("FREE") // "FREE" | "PRO" | "SCALE"
+  creditLimit      Int       @default(10)     // FREE=10, PRO=500, SCALE=5000
+  creditsUsed      Int       @default(0)
+  creditsResetAt   DateTime?                  // Reset on billing cycle renewal
+
+  // ── Lemon Squeezy ──
+  lsCustomerId String? @unique // Lemon Squeezy customer ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ──
+  leads             Lead[]
+  generatedMessages GeneratedMessage[]
+  campaigns         Campaign[]
+  processingJobs    ProcessingJob[]
+  usageLogs         UsageLog[]
+  subscription      Subscription? // One active subscription at a time
+
+  @@index([email])
+  @@map("users")
+}
+
+/// Lemon Squeezy subscription record. Separated from User for
+/// clean webhook handling and a complete billing audit trail.
+/// User.plan stores the current plan for fast access checks.
+model Subscription {
+  id                     String    @id @default(cuid())
+  lemonSqueezyId         String    @unique           // Lemon Squeezy subscription ID
+  lemonSqueezyCustomerId String?                     // Lemon Squeezy customer ID
+  variantId              String                      // Which plan variant they purchased
+  status                 String    @default("active") // "active" | "cancelled" | "past_due" | "paused" | "expired"
+  plan                   String    @default("FREE")  // "FREE" | "PRO" | "SCALE"
+  currentPeriodEnd       DateTime?
+  cancelledAt            DateTime?
+
+  // ── Foreign Keys ──
+  userId String @unique // One subscription per user
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ──
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lemonSqueezyId])
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CORE PRODUCT — LEADS & AI GENERATION
+// ═══════════════════════════════════════════════════════════════
+
+/// Each lead a user wants to generate icebreakers for.
+/// Can belong to a Campaign (CSV upload) or be standalone (manual input).
+/// The `website` field may be a company domain OR a LinkedIn URL —
+/// the scraper's linkedin-detector.ts handles the routing.
+model Lead {
+  id          String     @id @default(cuid())
+  name        String
+  email       String? // Lead's email (optional, for export)
+  company     String
+  title       String? // Job title
+  website     String? // Company domain or LinkedIn URL
+  linkedinUrl String? // Separate LinkedIn field for CSV imports
+  source      LeadSource @default(manual)
+
+  // ── Foreign Keys ──
+  userId     String
+  campaignId String? // Null if manually entered (not from CSV)
+  jobId      String? // Links lead to its background ProcessingJob
+
+  createdAt DateTime @default(now())
+
+  // ── Relations ──
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign          Campaign?          @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  job               ProcessingJob?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  generatedMessages GeneratedMessage[]
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([jobId])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+/// AI-generated icebreaker with full cost tracking.
+/// Linked to BOTH Lead and User — so you can query
+/// "all messages for this lead" and "all messages by this user."
+model GeneratedMessage {
+  id      String       @id @default(cuid())
+  content String       @db.Text // The icebreaker text
+  tone    MessageTone? // professional, casual, bold
+
+  // ── AI & Cost Tracking ──
+  aiModel       String @default("gpt-4o-mini")
+  tokensUsed    Int    @default(0)
+  estimatedCost Float  @default(0) // USD
+
+  // ── Spam Check Result ──
+  isClean      Boolean  @default(true) // false if spam words detected
+  flaggedWords String[] @default([]) // e.g. ["free", "guarantee"]
+
+  isFavorite Boolean @default(false)
+
+  // ── Foreign Keys ──
+  leadId String
+  userId String
+
+  createdAt DateTime @default(now())
+
+  // ── Relations ──
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([leadId])
+  @@index([createdAt])
+  @@map("generated_messages")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CAMPAIGNS & BULK PROCESSING
+// ═══════════════════════════════════════════════════════════════
+
+/// When a user uploads a CSV, all leads belong to one Campaign.
+/// Enables batch organization, progress tracking, and grouped exports.
+model Campaign {
+  id             String         @id @default(cuid())
+  name           String // e.g. "Q1 SaaS Outreach"
+  status         CampaignStatus @default(draft)
+  totalLeads     Int            @default(0)
+  processedLeads Int            @default(0)
+  csvFileName    String? // Original filename for reference
+
+  // ── Foreign Keys ──
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ──
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leads          Lead[]
+  processingJobs ProcessingJob[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("campaigns")
+}
+
+/// Background queue job for bulk CSV processing.
+/// Frontend polls /api/queue/status/[jobId] every 3 seconds
+/// to display real-time progress bar via use-job-status.ts hook.
+model ProcessingJob {
+  id             String    @id @default(cuid())
+  status         JobStatus @default(pending)
+  totalLeads     Int
+  processedLeads Int       @default(0)
+  failedLeads    Int       @default(0)
+  errorMessage   String?   @db.Text // Last error for debugging
+
+  // ── Foreign Keys ──
+  userId     String
+  campaignId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ──
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  leads    Lead[]
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([status])
+  @@map("processing_jobs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CACHING & ANALYTICS
+// ═══════════════════════════════════════════════════════════════
+
+/// Caches scraped company website data by domain.
+/// 100 leads at acme.com → 1 scrape, not 100.
+///
+/// TTL: 24 hours. Cron at /api/cron/cleanup-cache deletes expired rows.
+/// Located in: src/features/scraper/cache.service.ts
+model ScraperCache {
+  id          String  @id @default(cuid())
+  domain      String  @unique // e.g. "acme.com"
+  description String? @db.Text // Meta description / about text
+  blogPosts   String? @db.Text // JSON array of recent post titles
+  rawHtml     String? @db.Text // Fallback raw extract
+
+  scrapedAt DateTime @default(now())
+  expiresAt DateTime // scrapedAt + 24 hours
+
+  @@index([domain])
+  @@index([expiresAt])
+  @@map("scraper_cache")
+}
+
+/// Per-generation usage log for cost analytics and abuse detection.
+/// Enables: "total cost per user this month", "who's approaching limits"
+/// Located in: src/features/billing/usage-tracker.ts
+model UsageLog {
+  id            String @id @default(cuid())
+  action        String @default("icebreaker_generated")
+  creditsUsed   Int    @default(1)
+  tokensUsed    Int    @default(0)
+  estimatedCost Float  @default(0) // USD
+  aiModel       String @default("gpt-4o-mini")
+  metadata      Json? // { leadName, company, responseTimeMs, ... }
+
+  // ── Foreign Keys ──
+  userId String
+
+  createdAt DateTime @default(now())
+
+  // ── Relations ──
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, createdAt]) // Composite: monthly cost per user query
+  @@map("usage_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IcebreakerAI — Prisma Schema (Definitive)
+// Cold Email Icebreaker Generator SaaS
+// ═══════════════════════════════════════════════════════════════
+//
+// Based on Schema 2 (production-grade) with fixes applied:
+//   ✓ User.id uses Supabase Auth UUID (no cuid — must match auth.users.id)
+//   ✓ Removed non-MVP fields (companySize, industry on Lead — add later)
+//   ✓ ScraperCache TTL set to 24 hours (not 7 days — stale company data)
+//   ✓ Added updatedAt on User
+//   ✓ Kept all enums, indexes, Campaign, UsageLog, linked Lead→Message
+//
+// After editing:
+//   npx prisma format
+//   npx prisma db push    (dev)
+//   npx prisma migrate dev (production)
+//
+// Connection setup (.env.local):
+//   DATABASE_URL = pooled URL (port 6543, ?pgbouncer=true)
+//   DIRECT_URL   = direct URL (port 5432, for migrations only)
+//
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// RELATIONSHIP MAP
+// ═══════════════════════════════════════════════════════════════
+//
+//   User ─────┬── has many ── Lead
+//             ├── has many ── GeneratedMessage
+//             ├── has many ── Campaign
+//             ├── has many ── ProcessingJob
+//             ├── has many ── UsageLog
+//             └── has one  ── Subscription
+//
+//   Campaign ─┬── has many ── Lead
+//             └── has many ── ProcessingJob
+//
+//   Lead ─────── has many ── GeneratedMessage
+//
+//   ScraperCache ── standalone (domain-scoped, no FK)
+//
+// ═══════════════════════════════════════════════════════════════
+// FIXES APPLIED TO SCHEMA 2
+// ═══════════════════════════════════════════════════════════════
+//
+//   1. User.id: removed @default(cuid()) — must match Supabase Auth UUID
+//   2. User.updatedAt: added @updatedAt (was missing)
+//   3. LeadSource: removed "hubspot", "apollo" (not in MVP)
+//   4. MessageType: replaced with MessageTone enum (MVP only generates icebreakers)
+//   5. GeneratedMessage.promptUsed: removed (debug field, use logs instead)
+//   6. GeneratedMessage: added isClean + flaggedWords for spam checker
+//   7. Lead: removed industry, companySize (add post-MVP when CRM integrations ship)
+//   8. ScraperCache TTL: 24 hours, not 7 days (company websites update frequently)
+//   9. ScraperCache: removed products field (over-engineering for MVP)
+//
+// ═══════════════════════════════════════════════════════════════

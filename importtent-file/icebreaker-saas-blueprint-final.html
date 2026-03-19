@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IcebreakerAI — Final SaaS Blueprint (Rewritten)</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06070b;
+            --surface: #0d0f16;
+            --surface2: #13151e;
+            --surface3: #191c28;
+            --border: #1a1d2d;
+            --border2: #252840;
+            --text: #e4e6f0;
+            --muted: #6b6f88;
+            --green: #2ee89a;
+            --green-dim: rgba(46,232,154,0.07);
+            --blue: #5f91f5;
+            --blue-dim: rgba(95,145,245,0.07);
+            --orange: #f28c3e;
+            --orange-dim: rgba(242,140,62,0.07);
+            --pink: #ec4899;
+            --pink-dim: rgba(236,72,153,0.07);
+            --yellow: #fbbf24;
+            --yellow-dim: rgba(251,191,36,0.07);
+            --cyan: #06d6d0;
+            --cyan-dim: rgba(6,214,208,0.07);
+            --red: #f87171;
+            --red-dim: rgba(248,113,113,0.07);
+            --purple: #a78bfa;
+            --purple-dim: rgba(167,139,250,0.07);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .grain {
+            position: fixed; inset: 0; z-index: 9999; pointer-events: none; opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .wrapper { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: border-color 0.3s;
+        }
+        .card:hover { border-color: var(--border2); }
+
+        .alert-card {
+            background: var(--surface);
+            border: 2px solid var(--red);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 0 60px rgba(248,113,113,0.06);
+        }
+        .alert-card.cyan { border-color: var(--cyan); box-shadow: 0 0 60px rgba(6,214,208,0.06); }
+        .alert-card.yellow { border-color: var(--yellow); box-shadow: 0 0 60px rgba(251,191,36,0.06); }
+        .alert-card.green { border-color: var(--green); box-shadow: 0 0 60px rgba(46,232,154,0.06); }
+        .alert-card.orange { border-color: var(--orange); box-shadow: 0 0 60px rgba(242,140,62,0.06); }
+
+        /* Typography */
+        h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+        h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+        h3 { font-size: 1.1rem; font-weight: 700; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; font-weight: 600;
+            padding: 4px 11px; border-radius: 6px;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            display: inline-block;
+        }
+
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 4px;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            background: var(--red); color: var(--bg);
+            margin-left: 8px; vertical-align: middle;
+        }
+
+        /* Steps */
+        .step {
+            padding: 8px 0 8px 28px;
+            position: relative;
+            font-size: 0.9rem;
+            color: #9fa3bc;
+            line-height: 1.7;
+        }
+        .step::before {
+            content: '→'; position: absolute; left: 6px; font-size: 0.75rem;
+        }
+        .step.g::before { color: var(--green); }
+        .step.b::before { color: var(--blue); }
+        .step.o::before { color: var(--orange); }
+        .step.p::before { color: var(--pink); }
+        .step.y::before { color: var(--yellow); }
+        .step.c::before { color: var(--cyan); }
+        .step.r::before { color: var(--red); }
+
+        /* Code */
+        .code {
+            background: #080a11;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            line-height: 2;
+            overflow-x: auto;
+            color: var(--muted);
+        }
+        .code .g { color: var(--green); }
+        .code .b { color: var(--blue); }
+        .code .o { color: var(--orange); }
+        .code .y { color: var(--yellow); }
+        .code .c { color: var(--cyan); }
+        .code .r { color: var(--red); }
+        .code .dim { color: #363a52; }
+        .code .pp { color: var(--purple); }
+
+
+/* New folder tree start */
+
+
+ /* Tree container */
+        .tree-box {
+            background: var(--surface);
+            border: 2px solid var(--green);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 0 80px rgba(52,211,153,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        .tree-box::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--cyan), var(--violet));
+            opacity: 0.6;
+        }
+
+        /* Folder tree */
+        .tree {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.67rem;
+            line-height: 2.15;
+            color: var(--muted);
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .tree .dir { color: var(--blue); font-weight: 600; }
+        .tree .file { color: var(--text); font-weight: 400; }
+        .tree .desc { color: var(--green); font-style: italic; }
+        .tree .desc-new { color: var(--red); font-style: italic; }
+        .tree .layer { color: var(--violet); font-weight: 500; }
+        .tree .group { color: var(--cyan); font-weight: 600; }
+        .tree .sep { color: var(--dim); }
+
+
+
+         /* Legend */
+        .legend {
+            display: flex; flex-wrap: wrap; gap: 16px;
+            padding: 20px 24px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.75rem;
+        }
+        .legend-dot {
+            width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0;
+        }
+
+/* New folder tree End */
+
+
+
+        /* Folder tree
+        .tree {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem; line-height: 2.1;
+            color: var(--muted);
+            background: #080a11;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .tree .dir { color: var(--blue); font-weight: 600; }
+        .tree .hl { color: var(--green); }
+        .tree .new { color: var(--red); }
+        .tree .layer { color: var(--purple); font-style: italic; } */
+
+        /* Progress */
+        .progress { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 2px; }
+
+        /* Section number */
+        .sec-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; font-weight: 700;
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Flow arrow */
+        .arrow { text-align: center; color: var(--muted); font-size: 1.1rem; padding: 6px 0; opacity: 0.35; }
+
+        /* Money node */
+        .money {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 22px;
+            text-align: center;
+        }
+
+        /* Country card */
+        .country {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .country:hover { border-color: var(--border2); transform: translateY(-2px); }
+        .country .flag { font-size: 2.2rem; margin-bottom: 10px; }
+
+        /* Solution box */
+        .solution {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 14px;
+        }
+
+        /* Risk icon */
+        .risk-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; flex-shrink: 0;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border), transparent);
+            margin: 56px 0;
+        }
+
+        /* Grid helpers */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        /* Nav tags */
+        .nav-tag {
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .nav-tag:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .data-table th { color: var(--muted); font-weight: 600; text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+        .data-table tr:last-child td { border-bottom: none; }
+
+        /* Comparison header */
+        .comparison-header {
+            background: linear-gradient(135deg, var(--green-dim), var(--blue-dim));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 48px;
+        }
+    </style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header style="border-bottom: 1px solid var(--border);">
+    <div class="wrapper" style="padding-top: 48px; padding-bottom: 48px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--green);"></div>
+            <span class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--green);">Final Blueprint — Rewritten &amp; Restructured</span>
+        </div>
+
+        <h1>
+            Cold Email Icebreaker<br>
+            <span style="color: var(--green);">Generator SaaS</span>
+        </h1>
+
+        <p style="color: var(--muted); font-size: 0.92rem; max-width: 640px; margin-top: 16px;">
+            Complete business blueprint with production architecture, new modular folder structure,
+            payment flow, risk mitigations, and go-to-market strategy.
+            <strong style="color: var(--cyan);">Built from the best of both blueprints.</strong>
+        </p>
+
+        <!-- Tech stack nav -->
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px;">
+            <a href="#sec-arch" class="nav-tag tag" style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,232,154,0.15);">Next.js 14</a>
+            <a href="#sec-db" class="nav-tag tag" style="background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(95,145,245,0.15);">Supabase</a>
+            <a href="#sec-db" class="nav-tag tag" style="background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(242,140,62,0.15);">Prisma</a>
+            <a href="#sec-billing" class="nav-tag tag" style="background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.15);">Lemon Squeezy</a>
+            <a href="#sec-ai" class="nav-tag tag" style="background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,214,208,0.15);">GPT-4o-mini</a>
+            <a href="#sec-money" class="nav-tag tag" style="background: var(--pink-dim); color: var(--pink); border: 1px solid rgba(236,72,153,0.15);">Payoneer → BRAC Bank</a>
+            <a href="#sec-queue" class="nav-tag tag" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.15);">Upstash Queue</a>
+            <a href="#sec-folder" class="nav-tag tag" style="background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.15);">New Folder Structure</a>
+        </div>
+    </div>
+</header>
+
+<main class="wrapper" style="padding-top: 56px; padding-bottom: 56px;">
+
+<!-- ══════════════ BLUEPRINT COMPARISON ══════════════ -->
+<section>
+    <div class="comparison-header">
+        <p class="mono" style="font-size: 0.7rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px;">Blueprint Comparison Result</p>
+        <h2 style="margin-bottom: 16px;">Blueprint V2 Selected — Here's Why</h2>
+
+        <div class="grid-2" style="margin-top: 20px;">
+            <div style="background: var(--surface); border: 2px solid var(--green); border-radius: 12px; padding: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-weight: 700;">Blueprint V2 (Main)</span>
+                    <span class="tag" style="background: var(--green); color: var(--bg);">WINNER</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.7;">
+                    1,911 lines · <strong style="color: var(--text);">10 sections</strong> · Includes all 5 production risks
+                    PLUS 4 Product &amp; GTM updates: LinkedIn URL fallback, spam word checker,
+                    programmatic SEO, and connection pooling gotcha. Most comprehensive coverage.
+                </p>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; opacity: 0.6;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-weight: 700;">Updated Blueprint</span>
+                    <span class="tag" style="background: var(--surface2); color: var(--muted);">SUBSET</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.7;">
+                    1,686 lines · <strong style="color: var(--text);">9 sections</strong> · Same core architecture and risks
+                    but <strong style="color: var(--red);">missing</strong> the Product &amp; GTM Updates section entirely.
+                    No LinkedIn fallback, no spam checker, no programmatic SEO pages.
+                </p>
+            </div>
+        </div>
+
+        <p style="font-size: 0.82rem; color: var(--muted); margin-top: 16px;">
+            <strong style="color: var(--green);">This rewritten blueprint</strong> takes everything from Blueprint V2 and improves it with a
+            professional, modular folder structure that separates concerns into clear layers.
+        </p>
+    </div>
+</section>
+
+<!-- ══════════════ 01: SYSTEM ARCHITECTURE ══════════════ -->
+<section id="sec-arch">
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,232,154,0.15);">01</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--green);">System Overview</p>
+            <h2>Production Architecture</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="code">
+            <span class="dim">/* ═══ COMPLETE SYSTEM ARCHITECTURE ═══ */</span><br><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g">🌍 Global Customers</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(US, UK, CA, IN, BR, PH)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┌─────────────────────────┐<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;<span class="g">Next.js 14 App Router</span>&nbsp;&nbsp;│&nbsp;&nbsp;← Hosted on <span class="b">Vercel</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;Landing + Dashboard&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└───────────┬─────────────┘<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┌─────────────────────────┐<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;<span class="b">Supabase Backend</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;Auth + PostgreSQL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;+ File Storage (CSV)&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└──┬──────────┬───────────┘<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;┌──────────┐&nbsp;&nbsp;┌──────────────┐<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│ <span class="c">GPT-4o-mini</span>│&nbsp;&nbsp;│ <span class="y">Lemon Squeezy</span>│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│ Icebreaker│&nbsp;&nbsp;│ Payments&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│ Engine&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;│ + Billing&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;└──────────┘&nbsp;&nbsp;└──────┬───────┘<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┌──────────────────┐<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;<span class="o">Payoneer</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;← Payout 1st &amp; 15th<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;Withdrawal (2%)&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└────────┬─────────┘<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┌────────────────────┐<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;<span style="color:#ec4899;">🏦 BRAC Bank</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;or bKash (instant)&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;BDT in your pocket&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└────────────────────┘
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 02: NEW FOLDER STRUCTURE ══════════════ -->
+<section id="sec-folder">
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.15);">02</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--purple);">Project Structure <span class="badge">REWRITTEN</span></p>
+            <h2>New Modular Folder Structure</h2>
+        </div>
+    </div>
+
+    <div style="background: var(--surface); border: 2px solid var(--purple); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 0 60px rgba(167,139,250,0.05);">
+        <p class="mono" style="font-size: 0.68rem; color: var(--purple); margin-bottom: 6px;">WHY THIS STRUCTURE IS BETTER</p>
+        <p style="font-size: 0.85rem; color: var(--muted); line-height: 1.7;">
+            The original blueprint put everything in a flat <code style="color: var(--cyan);">lib/</code> folder with files like
+            <code>ai.ts</code>, <code>queue.ts</code>, <code>cache.ts</code> all at the same level.
+            This new structure separates code into <strong style="color: var(--purple);">feature modules</strong> and
+            <strong style="color: var(--purple);">architectural layers</strong>, so you always know where to find things —
+            even as the codebase grows to 50+ files.
+        </p>
+    </div>
+
+   
+
+
+
+
+    <section>
+            <div class="section-head">
+                <div class="section-icon" style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.15);">📁</div>
+                <div>
+                    <p class="mono" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--green);">Single Source of Truth</p>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">The Definitive Folder Structure</h2>
+                </div>
+            </div>
+
+            <div class="tree-box">
+                <div class="tree"><span class="dir">icebreaker-saas/</span>
+                    <span class="sep">│</span>
+                    <span class="sep">├──</span> <span class="dir">src/</span>                                      <span class="layer">← all source code</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   ├──</span> <span class="dir">app/</span>                                  <span class="layer">← Next.js App Router</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="group">(marketing)/</span>                  <span class="layer">← public pages (no auth required)</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">page.tsx</span>                  <span class="desc">landing page (hero, demo, pricing)</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">pricing/</span><span class="file">page.tsx</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">icebreakers/[industry]/</span><span class="file">page.tsx</span>   <span class="desc">programmatic SEO pages</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">terms/</span><span class="file">page.tsx</span>
+                    <span class="sep">│   │   │   └──</span> <span class="dir">privacy/</span><span class="file">page.tsx</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="group">(auth)/</span>                       <span class="layer">← authentication pages</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">login/</span><span class="file">page.tsx</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">signup/</span><span class="file">page.tsx</span>
+                    <span class="sep">│   │   │   └──</span> <span class="dir">callback/</span><span class="file">route.ts</span>       <span class="desc">Supabase OAuth callback</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="group">(dashboard)/</span>                  <span class="layer">← protected area (requires auth)</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">layout.tsx</span>                <span class="desc">sidebar + auth guard</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">dashboard/</span><span class="file">page.tsx</span>       <span class="desc">usage stats, recent icebreakers</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">generate/</span><span class="file">page.tsx</span>        <span class="desc">single lead form</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">bulk/</span><span class="file">page.tsx</span>            <span class="desc">CSV upload &amp; bulk processing</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">results/</span><span class="file">page.tsx</span>         <span class="desc">view, export, regenerate</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">billing/</span><span class="file">page.tsx</span>         <span class="desc">plan management, invoices</span>
+                    <span class="sep">│   │   │   └──</span> <span class="dir">settings/</span><span class="file">page.tsx</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">api/</span>                              <span class="layer">← API route handlers</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">generate/</span><span class="file">route.ts</span>        <span class="desc">single icebreaker generation</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">leads/</span>
+                    <span class="sep">│   │   │   │   ├──</span> <span class="file">route.ts</span>              <span class="desc">CRUD operations</span>
+                    <span class="sep">│   │   │   │   └──</span> <span class="dir">upload/</span><span class="file">route.ts</span>      <span class="desc">CSV upload &amp; queue dispatch</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">queue/</span>
+                    <span class="sep">│   │   │   │   ├──</span> <span class="dir">process/</span><span class="file">route.ts</span>     <span class="desc-new">queue worker endpoint</span>
+                    <span class="sep">│   │   │   │   └──</span> <span class="dir">status/[jobId]/</span><span class="file">route.ts</span>  <span class="desc-new">job progress polling</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="dir">webhooks/</span>
+                    <span class="sep">│   │   │   │   └──</span> <span class="dir">lemonsqueezy/</span><span class="file">route.ts</span> <span class="desc">payment webhook handler</span>
+                    <span class="sep">│   │   │   └──</span> <span class="dir">cron/</span>
+                    <span class="sep">│   │   │       ├──</span> <span class="dir">reset-credits/</span><span class="file">route.ts</span>  <span class="desc-new">monthly credit reset</span>
+                    <span class="sep">│   │   │       └──</span> <span class="dir">cleanup-cache/</span><span class="file">route.ts</span>  <span class="desc-new">purge expired scraper cache</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">layout.tsx</span>                    <span class="desc">root layout (fonts, providers)</span>
+                    <span class="sep">│   │   └──</span> <span class="file">globals.css</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   ├──</span> <span class="dir">features/</span>                             <span class="layer">← domain logic (by feature)</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">ai/</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">ai.service.ts</span>             <span class="desc">GPT-4o-mini integration</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">prompt-builder.ts</span>         <span class="desc">dynamic prompt construction</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">spam-checker.ts</span>           <span class="desc-new">spam word detection</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">scraper/</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">scraper.service.ts</span>        <span class="desc">Cheerio scraper + fallback</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">linkedin-detector.ts</span>      <span class="desc-new">LinkedIn URL bypass</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">cache.service.ts</span>          <span class="desc">24hr domain cache layer</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">billing/</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">billing.service.ts</span>        <span class="desc">Lemon Squeezy helpers</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">usage-tracker.ts</span>          <span class="desc-new">credit tracking &amp; enforcement</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">plans.config.ts</span>           <span class="desc">plan definitions &amp; limits</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">queue/</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">queue.service.ts</span>          <span class="desc-new">Upstash Redis queue manager</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">csv-processor.ts</span>          <span class="desc-new">bulk CSV processing logic</span>
+                    <span class="sep">│   │   │</span>
+                    <span class="sep">│   │   └──</span> <span class="dir">seo/</span>
+                    <span class="sep">│   │       ├──</span> <span class="file">industries.config.ts</span>      <span class="desc-new">industry list &amp; metadata</span>
+                    <span class="sep">│   │       └──</span> <span class="file">example-generator.ts</span>      <span class="desc-new">build-time icebreaker examples</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   ├──</span> <span class="dir">components/</span>                           <span class="layer">← shared React components</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">ui/</span>                               <span class="desc">Button, Input, Card, Modal</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">layout/</span>                           <span class="desc">Navbar, Sidebar, Footer</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">forms/</span>                            <span class="desc">LeadForm, CSVUploader, ColumnMapper</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">results/</span>                          <span class="desc">IcebreakerCard, ResultsTable, SpamBadge</span>
+                    <span class="sep">│   │   └──</span> <span class="dir">billing/</span>                          <span class="desc">PricingTable, UsageMeter, UpgradePrompt</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   ├──</span> <span class="dir">lib/</span>                                  <span class="layer">← infrastructure &amp; utilities</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">db/</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">prisma.ts</span>                 <span class="desc">singleton Prisma client (pooled)</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">queries.ts</span>                <span class="desc">reusable DB queries</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">auth/</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">supabase-client.ts</span>        <span class="desc">browser client</span>
+                    <span class="sep">│   │   │   ├──</span> <span class="file">supabase-server.ts</span>        <span class="desc">server-side client</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">middleware.ts</span>              <span class="desc">auth guard logic</span>
+                    <span class="sep">│   │   ├──</span> <span class="dir">redis/</span>
+                    <span class="sep">│   │   │   └──</span> <span class="file">upstash.ts</span>                <span class="desc-new">Upstash Redis client</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">validations.ts</span>                <span class="desc">Zod schemas for API inputs</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">rate-limiter.ts</span>               <span class="desc">API rate limiting</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">constants.ts</span>                  <span class="desc">app-wide constants</span>
+                    <span class="sep">│   │   └──</span> <span class="file">utils.ts</span>                      <span class="desc">helpers (formatCurrency, etc.)</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   ├──</span> <span class="dir">hooks/</span>                                <span class="layer">← custom React hooks</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">use-auth.ts</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">use-credits.ts</span>
+                    <span class="sep">│   │   └──</span> <span class="file">use-job-status.ts</span>             <span class="desc-new">poll queue job progress</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   ├──</span> <span class="dir">types/</span>                                <span class="layer">← TypeScript definitions</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">lead.ts</span>
+                    <span class="sep">│   │   ├──</span> <span class="file">subscription.ts</span>
+                    <span class="sep">│   │   └──</span> <span class="file">api.ts</span>
+                    <span class="sep">│   │</span>
+                    <span class="sep">│   └──</span> <span class="file">middleware.ts</span>                      <span class="desc">Next.js middleware (auth redirect)</span>
+                    <span class="sep">│</span>
+                    <span class="sep">├──</span> <span class="dir">prisma/</span>
+                    <span class="sep">│   ├──</span> <span class="file">schema.prisma</span>                      <span class="desc">complete data model</span>
+                    <span class="sep">│   └──</span> <span class="dir">migrations/</span>
+                    <span class="sep">│</span>
+                    <span class="sep">├──</span> <span class="dir">public/</span>
+                    <span class="sep">│   ├──</span> <span class="dir">images/</span>
+                    <span class="sep">│   └──</span> <span class="file">favicon.ico</span>
+                    <span class="sep">│</span>
+                    <span class="sep">├──</span> <span class="dir">scripts/</span>                                  <span class="layer">← dev &amp; build scripts</span>
+                    <span class="sep">│   ├──</span> <span class="file">seed.ts</span>                            <span class="desc">seed database with test data</span>
+                    <span class="sep">│   └──</span> <span class="file">generate-seo-content.ts</span>            <span class="desc-new">pre-generate SEO page content</span>
+                    <span class="sep">│</span>
+                    <span class="sep">├──</span> <span class="file">.env.local</span>                                <span class="desc">all API keys &amp; secrets</span>
+                    <span class="sep">├──</span> <span class="file">.env.example</span>                              <span class="desc">template with key names</span>
+                    <span class="sep">├──</span> <span class="file">next.config.js</span>
+                    <span class="sep">├──</span> <span class="file">tailwind.config.ts</span>
+                    <span class="sep">├──</span> <span class="file">tsconfig.json</span>
+                    <span class="sep">└──</span> <span class="file">package.json</span></div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot" style="background: var(--blue);"></div><span style="color: var(--muted); font-family: 'Fira Code', monospace;">Directory</span></div>
+                    <div class="legend-item"><div class="legend-dot" style="background: var(--text);"></div><span style="color: var(--muted); font-family: 'Fira Code', monospace;">File</span></div>
+                    <div class="legend-item"><div class="legend-dot" style="background: var(--cyan);"></div><span style="color: var(--muted); font-family: 'Fira Code', monospace;">Route Group</span></div>
+                    <div class="legend-item"><div class="legend-dot" style="background: var(--violet);"></div><span style="color: var(--muted); font-family: 'Fira Code', monospace;">Layer Label</span></div>
+                    <div class="legend-item"><div class="legend-dot" style="background: var(--green);"></div><span style="color: var(--muted); font-family: 'Fira Code', monospace;">Description</span></div>
+                    <div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div><span style="color: var(--muted); font-family: 'Fira Code', monospace;">New Addition</span></div>
+                </div>
+            </div>
+            
+        </section>
+
+
+        <section>
+            <div class="section-head " style="margin-top: 50px;">
+                <div class="section-icon" style="background: var(--violet-dim); color: var(--violet); border: 1px solid rgba(167,139,250,0.15);">🧱</div>
+                <div>
+                    <p class="mono" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--violet);">Architecture</p>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">How the Layers Connect</h2>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+                <!-- Layer 1 -->
+                <div class="card" style="border-left: 3px solid var(--cyan);">
+                    <p class="mono" style="font-size: 0.6rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Layer 1 — Routes</p>
+                    <p style="font-weight: 700; margin-bottom: 6px;">src/app/</p>
+                    <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.65;">
+                        Pages &amp; API route handlers. Thin layer — receives requests, calls features, returns responses. No business logic here.
+                    </p>
+                </div>
+
+                <!-- Layer 2 -->
+                <div class="card" style="border-left: 3px solid var(--green);">
+                    <p class="mono" style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Layer 2 — Features</p>
+                    <p style="font-weight: 700; margin-bottom: 6px;">src/features/</p>
+                    <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.65;">
+                        Domain logic grouped by feature: AI generation, web scraping, billing, queue processing, SEO. Each module is self-contained.
+                    </p>
+                </div>
+
+                <!-- Layer 3 -->
+                <div class="card" style="border-left: 3px solid var(--orange);">
+                    <p class="mono" style="font-size: 0.6rem; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Layer 3 — Components</p>
+                    <p style="font-weight: 700; margin-bottom: 6px;">src/components/</p>
+                    <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.65;">
+                        Shared React UI organized by purpose: primitives, layout, forms, results display, billing widgets. Used by route pages.
+                    </p>
+                </div>
+
+                <!-- Layer 4 -->
+                <div class="card" style="border-left: 3px solid var(--blue);">
+                    <p class="mono" style="font-size: 0.6rem; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Layer 4 — Infrastructure</p>
+                    <p style="font-weight: 700; margin-bottom: 6px;">src/lib/</p>
+                    <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.65;">
+                        Database clients, auth helpers, Redis, validation, rate limiting. Shared across all features. No business logic — only infrastructure.
+                    </p>
+                </div>
+
+                <!-- Layer 5 -->
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <p class="mono" style="font-size: 0.6rem; color: var(--yellow); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Layer 5 — Hooks &amp; Types</p>
+                    <p style="font-weight: 700; margin-bottom: 6px;">src/hooks/ &amp; src/types/</p>
+                    <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.65;">
+                        Custom React hooks for client-side logic (auth, credits, job polling). TypeScript types split by domain for clean imports.
+                    </p>
+                </div>
+
+                <!-- Layer 6 -->
+                <div class="card" style="border-left: 3px solid var(--pink);">
+                    <p class="mono" style="font-size: 0.6rem; color: var(--pink); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Layer 6 — Data &amp; Config</p>
+                    <p style="font-weight: 700; margin-bottom: 6px;">prisma/ &amp; scripts/</p>
+                    <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.65;">
+                        Database schema &amp; migrations live outside src/. Scripts for seeding and SEO content generation run at build/dev time.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Import rule -->
+            <div class="card" style="margin-top: 20px; border-color: rgba(167,139,250,0.25);">
+                <p class="mono" style="font-size: 0.62rem; color: var(--violet); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.1em;">IMPORT DIRECTION RULE</p>
+                <div style="font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--muted); line-height: 2.2; text-align: center;">
+                    <span style="color: var(--cyan);">Routes (app/)</span>
+                    <span style="color: var(--dim);"> → </span>
+                    <span style="color: var(--green);">Features</span>
+                    <span style="color: var(--dim);"> → </span>
+                    <span style="color: var(--blue);">Lib (infra)</span>
+                    <br>
+                    <span style="color: var(--cyan);">Routes (app/)</span>
+                    <span style="color: var(--dim);"> → </span>
+                    <span style="color: var(--orange);">Components</span>
+                    <span style="color: var(--dim);"> → </span>
+                    <span style="color: var(--yellow);">Hooks / Types</span>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--muted); text-align: center; margin-top: 10px;">
+                    Never import from <code style="color: var(--cyan);">app/</code> into <code style="color: var(--green);">features/</code>.
+                    Never import from <code style="color: var(--green);">features/</code> into <code style="color: var(--blue);">lib/</code>.
+                    Dependencies flow downward only.
+                </p>
+            </div>
+        </section>
+
+
+
+    <div class="grid-3" style="margin-top: 16px;">
+        <div class="card" style="padding: 20px;">
+            <p class="mono" style="font-size: 0.62rem; color: var(--purple); margin-bottom: 8px;">FEATURES/</p>
+            <p style="font-size: 0.82rem; color: var(--muted);">Domain logic grouped by feature. Each folder is self-contained — AI, scraper, billing, queue, SEO.</p>
+        </div>
+        <div class="card" style="padding: 20px;">
+            <p class="mono" style="font-size: 0.62rem; color: var(--blue); margin-bottom: 8px;">LIB/</p>
+            <p style="font-size: 0.82rem; color: var(--muted);">Infrastructure code shared across features — database clients, auth, Redis, validation, rate limiting.</p>
+        </div>
+        <div class="card" style="padding: 20px;">
+            <p class="mono" style="font-size: 0.62rem; color: var(--green); margin-bottom: 8px;">COMPONENTS/</p>
+            <p style="font-size: 0.82rem; color: var(--muted);">UI layer organized by purpose — primitives, layout, forms, results, billing widgets.</p>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 03: TARGET MARKETS ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(95,145,245,0.15);">03</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--blue);">Target Markets</p>
+            <h2>Why These 6 Countries — Strategic Selection</h2>
+        </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom: 20px;">
+        <div class="country"><div class="flag">🇺🇸</div><p style="font-weight: 700; font-size: 0.92rem;">United States</p><p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">Cold email capital · 70% of sales teams</p></div>
+        <div class="country"><div class="flag">🇬🇧</div><p style="font-weight: 700; font-size: 0.92rem;">United Kingdom</p><p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">SaaS-friendly · Lemon Squeezy EU-compliant</p></div>
+        <div class="country"><div class="flag">🇨🇦</div><p style="font-weight: 700; font-size: 0.92rem;">Canada</p><p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">No sales tax on digital services</p></div>
+        <div class="country"><div class="flag">🇮🇳</div><p style="font-weight: 700; font-size: 0.92rem;">India</p><p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">Fast-growing startup ecosystem</p></div>
+        <div class="country"><div class="flag">🇧🇷</div><p style="font-weight: 700; font-size: 0.92rem;">Brazil</p><p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">200M+ market · Add Pix/Boleto later</p></div>
+        <div class="country"><div class="flag">🇵🇭</div><p style="font-weight: 700; font-size: 0.92rem;">Philippines</p><p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">BPO hub · Growing sales community</p></div>
+    </div>
+
+    <div class="card">
+        <p class="mono" style="font-size: 0.68rem; color: var(--green); margin-bottom: 12px;">WHY LEMON SQUEEZY IS PERFECT FOR THIS</p>
+        <div class="step g">Handles sales tax in all 6 countries automatically</div>
+        <div class="step g">Supports Visa, Mastercard, PayPal, Apple Pay, Google Pay</div>
+        <div class="step g">EUR, GBP, CAD, INR built-in — easy to add BRL &amp; PHP</div>
+        <div class="step g">Non-US friendly — no US LLC required to start</div>
+        <div class="step g">Fraud protection + EU VAT compliance</div>
+        <div class="step g">Payoneer direct payout → no Stripe rejection for Bangladesh</div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 04: PRICING & MONEY FLOW ══════════════ -->
+<section id="sec-money">
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.15);">04</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--yellow);">Pricing &amp; Revenue</p>
+            <h2>Subscription Model — Money Flow Explained</h2>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+        <p class="mono" style="font-size: 0.68rem; color: var(--muted); margin-bottom: 16px;">PRICING STRATEGY — LOCALIZED BY MARKET</p>
+        <div class="grid-3" style="margin-bottom: 20px;">
+            <div style="background: var(--surface2); border: 2px solid var(--green); border-radius: 14px; padding: 22px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 1.5rem;">🇺🇸</span>
+                    <span class="tag" style="background: var(--green); color: var(--bg);">PRIORITY #1</span>
+                </div>
+                <p style="font-weight: 700; font-size: 1.05rem;">United States</p>
+                <p style="font-size: 1.6rem; font-weight: 800; color: var(--green);">$29/mo</p>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">500 credits · CSV bulk · Export</p>
+            </div>
+            <div style="background: var(--surface2); border: 1px solid var(--blue); border-radius: 14px; padding: 22px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 1.5rem;">🇬🇧 🇨🇦</span>
+                    <span class="tag" style="background: var(--blue-dim); color: var(--blue);">HIGH VALUE</span>
+                </div>
+                <p style="font-weight: 700; font-size: 1.05rem;">UK &amp; Canada</p>
+                <p style="font-size: 1.6rem; font-weight: 800; color: var(--blue);">$29/mo</p>
+                <p style="font-size: 0.78rem; color: var(--cyan);">£23/mo · C$40/mo</p>
+            </div>
+            <div style="background: var(--orange-dim); border: 2px solid var(--orange); border-radius: 14px; padding: 22px;">
+                <span class="tag" style="background: var(--orange); color: var(--bg); margin-bottom: 10px;">SCALE</span>
+                <p style="font-weight: 700; font-size: 1.05rem;">All Countries</p>
+                <p style="font-size: 1.6rem; font-weight: 800; color: var(--orange);">$79/mo</p>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">5,000 credits · API · CRM integrations</p>
+            </div>
+        </div>
+
+        <!-- Emerging markets -->
+        <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 20px;">
+            <p class="mono" style="font-size: 0.68rem; color: var(--yellow); margin-bottom: 14px;">EMERGING MARKETS — VOLUME PLAY</p>
+            <div class="grid-3">
+                <div style="text-align: center;">
+                    <span style="font-size: 1.6rem;">🇮🇳</span>
+                    <p style="font-weight: 700; margin-top: 6px;">India</p>
+                    <p style="font-size: 1.3rem; font-weight: 800; color: var(--yellow);">$9/mo</p>
+                    <p style="font-size: 0.75rem; color: var(--cyan);">(₹750/mo)</p>
+                </div>
+                <div style="text-align: center;">
+                    <span style="font-size: 1.6rem;">🇧🇷</span>
+                    <p style="font-weight: 700; margin-top: 6px;">Brazil</p>
+                    <p style="font-size: 1.3rem; font-weight: 800; color: var(--orange);">$15/mo</p>
+                    <p style="font-size: 0.75rem; color: var(--cyan);">(R$75/mo)</p>
+                </div>
+                <div style="text-align: center;">
+                    <span style="font-size: 1.6rem;">🇵🇭</span>
+                    <p style="font-weight: 700; margin-top: 6px;">Philippines</p>
+                    <p style="font-size: 1.3rem; font-weight: 800; color: var(--pink);">$12/mo</p>
+                    <p style="font-size: 0.75rem; color: var(--cyan);">(₱680/mo)</p>
+                </div>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--muted); text-align: center; margin-top: 14px;">
+                All emerging market plans include <strong style="color: var(--green);">500 credits/month</strong> — same features as US Pro.
+            </p>
+        </div>
+
+        <!-- Hard caps warning -->
+        <div style="background: var(--red-dim); border: 1px solid rgba(248,113,113,0.2); border-radius: 12px; padding: 18px;">
+            <p class="mono" style="font-size: 0.68rem; color: var(--red); margin-bottom: 8px;">⚠️ NO UNLIMITED PLANS — HARD CREDIT CAPS</p>
+            <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.7;">
+                <strong>Free:</strong> 10 credits/month · <strong>Pro (all countries):</strong> 500 credits/month · <strong>Scale:</strong> 5,000 credits/month<br>
+                All tracked in DB. Credits reset monthly. Over-limit → upgrade prompt. Prevents abuse and ensures profitability.
+            </p>
+        </div>
+    </div>
+
+    <!-- Money Flow -->
+    <div class="card" id="sec-billing">
+        <p class="mono" style="font-size: 0.68rem; color: var(--yellow); margin-bottom: 16px;">MONEY FLOW — $29 PRO SUBSCRIPTION</p>
+        <div class="money" style="border-color: rgba(46,232,154,0.25); background: rgba(46,232,154,0.03);">
+            <p style="font-size: 0.78rem; color: var(--muted);">Customer Pays</p>
+            <p style="font-size: 1.5rem; font-weight: 800; color: var(--green);">$29.00</p>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="money">
+            <p style="font-size: 0.78rem; color: var(--muted);">Lemon Squeezy takes 5% + 50¢</p>
+            <p style="font-size: 1.15rem; font-weight: 700; color: var(--yellow);">−$1.95</p>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="money">
+            <p style="font-size: 0.78rem; color: var(--muted);">Payout fee (~1%) + Payoneer (2%) + FX</p>
+            <p style="font-size: 1.15rem; font-weight: 700; color: var(--orange);">−$1.11</p>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="money" style="border-color: rgba(236,72,153,0.25); background: rgba(236,72,153,0.03);">
+            <p style="font-size: 0.78rem; color: var(--pink);">🏦 You Receive in BRAC Bank / bKash</p>
+            <p style="font-size: 1.8rem; font-weight: 800; color: var(--pink);">≈ $25.94</p>
+            <p style="font-size: 0.78rem; color: var(--muted);">≈ ৳2,854 BDT (at ~110 BDT/$) · <strong style="color: var(--green);">89% take-home</strong></p>
+        </div>
+    </div>
+
+    <!-- Withdrawal options -->
+    <div class="grid-2" style="margin-top: 16px;">
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <span style="font-size: 1.3rem;">⚡</span>
+                <div>
+                    <p style="font-weight: 700; font-size: 0.92rem;">Option A — Payoneer → bKash</p>
+                    <span class="tag" style="background: var(--green-dim); color: var(--green);">Recommended</span>
+                </div>
+            </div>
+            <div class="step g">Link Payoneer in bKash (one-time)</div>
+            <div class="step g">Select amount → Confirm → <strong style="color: var(--green);">Instant</strong></div>
+            <div class="step g">Cash out from ATM (৳7/thousand)</div>
+        </div>
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <span style="font-size: 1.3rem;">🏦</span>
+                <div>
+                    <p style="font-weight: 700; font-size: 0.92rem;">Option B — Payoneer → BRAC Bank</p>
+                    <span class="tag" style="background: var(--blue-dim); color: var(--blue);">Large Amounts</span>
+                </div>
+            </div>
+            <div class="step b">Add BRAC Bank details in Payoneer (one-time)</div>
+            <div class="step b">Enter USD amount → <strong style="color: var(--blue);">1-2 business days</strong></div>
+            <div class="step b">Better for larger withdrawals · Bank audit trail</div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 05: DATA STRATEGY ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,214,208,0.15);">05</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--cyan);">Data Strategy</p>
+            <h2>Lead Data Collection — Safe &amp; Legal</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="code">
+<span class="dim">/* ═══ SAFE DATA SOURCES (MVP) ═══ */</span><br><br>
+<span class="g">✔ User-Provided CSV</span> &nbsp;&nbsp;&nbsp;→ Name, Company, Role, Website<br>
+<span class="g">✔ Public Website Data</span> &nbsp;→ Scrape company description, blog, news<br>
+<span class="g">✔ Manual Lead Input</span> &nbsp;&nbsp;→ Single form on dashboard<br><br>
+<span class="dim">/* ═══ LATER ADDITIONS ═══ */</span><br><br>
+<span class="b">◇ Chrome Extension</span> &nbsp;&nbsp;&nbsp;→ User visits LinkedIn, extension reads page<br>
+<span class="b">◇ CRM Integrations</span> &nbsp;&nbsp;→ HubSpot, Apollo import<br>
+<span class="b">◇ Enrichment APIs</span> &nbsp;&nbsp;&nbsp;→ Clearbit, ZoomInfo lookup<br><br>
+<span class="dim">/* ═══ NEVER DO ═══ */</span><br><br>
+<span class="o">✘ Automated LinkedIn scraping</span><br>
+<span class="o">✘ Bulk profile extraction</span><br>
+<span class="o">✘ Selling or reselling lead data</span>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <p class="mono" style="font-size: 0.68rem; color: var(--muted); margin-bottom: 12px;">AI PERSONALIZATION FLOW</p>
+            <div class="code">
+<span class="g">Lead Data</span> (name, company, role, website)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="pp">LinkedIn Detector</span> → skip scrape if linkedin.com URL <span class="r">← NEW</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="b">Website Scraper</span> → extract company info, blog posts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│ <span class="r">← CACHING LAYER (24hr cache in features/scraper/)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="c">Prompt Builder</span> → combine lead data + company context<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│ <span class="y">← Spam check on output (features/ai/spam-checker.ts)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="y">GPT-4o-mini</span> → generate personalized icebreaker<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="g">Store in DB</span> → user can view, copy, export, regenerate
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 06: BUILD PHASES ══════════════ -->
+<section id="sec-db">
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(242,140,62,0.15);">06</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--orange);">Development Roadmap</p>
+            <h2>Build Phases — 7 Weeks to Launch</h2>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Phase 0 -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--green-dim); color: var(--green);">W1</span>
+                <h3>Phase 0 — Environment Setup</h3>
+            </div>
+            <div class="step g">Install Node.js 18+, Git, VS Code, PostgreSQL</div>
+            <div class="step g">Create accounts: Vercel, Supabase, OpenAI, Lemon Squeezy, Payoneer, Upstash (Redis)</div>
+            <div class="step g"><code class="mono" style="font-size: 0.82rem; color: var(--green);">npx create-next-app@latest icebreaker-saas --typescript --tailwind --app --src-dir</code></div>
+            <div class="step g">Install: prisma, @supabase/supabase-js, openai, @upstash/redis, cheerio, papaparse, zod</div>
+            <div class="step g">Setup .env.local with all API keys (copy from .env.example)</div>
+            <div class="step g">Push to GitHub repo &amp; connect to Vercel</div>
+            <div class="step g">Create the <code style="color: var(--purple);">src/features/</code>, <code style="color: var(--purple);">src/lib/</code>, <code style="color: var(--purple);">src/components/</code> folder structure from Section 02</div>
+        </div>
+
+        <!-- Phase 1 -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--blue-dim); color: var(--blue);">W1-2</span>
+                <h3>Phase 1 — Database &amp; Auth (Supabase)</h3>
+            </div>
+            <div class="step b">Design Prisma schema: User, Lead, GeneratedMessage, Subscription, ScraperCache, ProcessingJob, UsageLog</div>
+            <div class="step b">Configure Supabase Auth (Google + GitHub OAuth) in <code style="color: var(--purple);">src/lib/auth/</code></div>
+            <div class="step b">Build login/signup pages in <code style="color: var(--purple);">src/app/(auth)/</code></div>
+            <div class="step b">Protect dashboard routes with middleware in <code style="color: var(--purple);">src/middleware.ts</code></div>
+            <div class="step r">Setup Prisma with Supabase pooled URL (port 6543) — NOT direct connection <span class="badge">CRITICAL</span></div>
+            <div class="step b">Run <code class="mono" style="font-size: 0.82rem; color: var(--blue);">npx prisma db push</code></div>
+
+            <div class="solution" style="margin-top: 16px; background: var(--red-dim); border-color: rgba(248,113,113,0.3);">
+                <p class="mono" style="font-size: 0.68rem; color: var(--red); margin-bottom: 10px;">⚠️ CRITICAL: CONNECTION POOLING GOTCHA</p>
+                <div class="code" style="font-size: 0.66rem;">
+<span class="dim">// .env.local — in src/lib/db/prisma.ts singleton</span><br><br>
+<span class="r">✘ WRONG (direct — will exhaust connection limits):</span><br>
+<span class="o">DATABASE_URL="postgresql://user:pass@host:<strong>5432</strong>/postgres"</span><br><br>
+<span class="g">✔ CORRECT (pooled via PgBouncer):</span><br>
+<span class="g">DATABASE_URL="postgresql://user:pass@host:<strong>6543</strong>/postgres?pgbouncer=true"</span><br><br>
+<span class="dim">// For migrations only:</span><br>
+<span class="b">DIRECT_URL="postgresql://user:pass@host:<strong>5432</strong>/postgres"</span><br><br>
+<span class="dim">// prisma/schema.prisma</span><br>
+<span class="b">datasource db</span> {<br>
+&nbsp;&nbsp;provider&nbsp;&nbsp;= <span class="y">"postgresql"</span><br>
+&nbsp;&nbsp;url&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= env(<span class="y">"DATABASE_URL"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="dim">// Pooled for queries</span><br>
+&nbsp;&nbsp;directUrl = env(<span class="y">"DIRECT_URL"</span>)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="dim">// Direct for migrations</span><br>
+}
+                </div>
+                <p style="font-size: 0.82rem; color: var(--green); margin-top: 12px;">
+                    <strong>Bottom line:</strong> Always port <strong>6543</strong> for app, port <strong>5432</strong> for migrations only. This prevents the #1 cause of Supabase crashes in serverless.
+                </p>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <div class="progress"><div class="progress-fill" style="width: 18%; background: var(--blue);"></div></div>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 8px;">Checkpoint: Can sign up, log in, verify user in database</p>
+            </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="card" id="sec-ai">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--cyan-dim); color: var(--cyan);">W2-3</span>
+                <h3>Phase 2 — Core AI Engine + Scraper + Spam Checker</h3>
+            </div>
+            <div class="step c">Build scraper with Cheerio in <code style="color: var(--purple);">src/features/scraper/scraper.service.ts</code></div>
+            <div class="step r">Add LinkedIn URL detection in <code style="color: var(--purple);">src/features/scraper/linkedin-detector.ts</code> <span class="badge">NEW</span></div>
+            <div class="step c">Implement 24hr cache layer in <code style="color: var(--purple);">src/features/scraper/cache.service.ts</code></div>
+            <div class="step c">Build GPT-4o-mini integration in <code style="color: var(--purple);">src/features/ai/ai.service.ts</code></div>
+            <div class="step c">Build prompt builder with fallback in <code style="color: var(--purple);">src/features/ai/prompt-builder.ts</code></div>
+            <div class="step y">Add spam word checker in <code style="color: var(--purple);">src/features/ai/spam-checker.ts</code> <span class="badge">NEW</span></div>
+            <div class="step c">Create single lead form UI in <code style="color: var(--purple);">src/app/(dashboard)/generate/</code></div>
+            <div class="step c">Display generated icebreaker with copy + spam warning badge</div>
+            <div class="step c">Test with 50+ real leads — refine prompts</div>
+
+            <div style="margin-top: 16px;">
+                <div class="progress"><div class="progress-fill" style="width: 40%; background: var(--cyan);"></div></div>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 8px;">Checkpoint: Input lead info → get personalized icebreaker. This is your core product!</p>
+            </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="card" id="sec-queue" style="border-color: rgba(248,113,113,0.3);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--red-dim); color: var(--red);">W3-4</span>
+                <h3>Phase 3 — CSV Upload &amp; Queue System <span style="color: var(--red);">(CRITICAL)</span></h3>
+            </div>
+            <div class="step o">Build CSV upload UI in <code style="color: var(--purple);">src/components/forms/CSVUploader.tsx</code></div>
+            <div class="step o">Parse CSV with papaparse + column mapping in <code style="color: var(--purple);">src/components/forms/ColumnMapper.tsx</code></div>
+            <div class="step r">Implement Upstash Redis queue in <code style="color: var(--purple);">src/features/queue/queue.service.ts</code></div>
+            <div class="step r">Build queue worker at <code style="color: var(--purple);">src/app/api/queue/process/route.ts</code></div>
+            <div class="step r">Build job status polling at <code style="color: var(--purple);">src/app/api/queue/status/[jobId]/route.ts</code></div>
+            <div class="step r">Real-time progress via <code style="color: var(--purple);">src/hooks/use-job-status.ts</code> (polls every 3s)</div>
+            <div class="step o">Results table in <code style="color: var(--purple);">src/components/results/ResultsTable.tsx</code></div>
+            <div class="step o">Export results as downloadable CSV</div>
+
+            <div class="solution" style="background: var(--red-dim); border-color: rgba(248,113,113,0.3);">
+                <p class="mono" style="font-size: 0.68rem; color: var(--red); margin-bottom: 8px;">⚠️ WHY QUEUE IS MANDATORY IN PHASE 3</p>
+                <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.7;">
+                    Vercel serverless functions timeout after 10-60 seconds. Processing 200-500 leads synchronously will <strong>always fail</strong>.
+                    The queue allows background processing while showing real-time progress. This is not optional.
+                </p>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <div class="progress"><div class="progress-fill" style="width: 58%; background: var(--orange);"></div></div>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 8px;">Checkpoint: Upload CSV → bulk icebreakers (via queue) → export. This is the paid feature.</p>
+            </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--yellow-dim); color: var(--yellow);">W4-5</span>
+                <h3>Phase 4 — Billing (Lemon Squeezy) + Usage Caps</h3>
+            </div>
+            <div class="step y">Create products in Lemon Squeezy: Free ($0), Pro ($29), Scale ($79)</div>
+            <div class="step y">Build checkout integration using <code style="color: var(--purple);">src/features/billing/billing.service.ts</code></div>
+            <div class="step y">Build webhook handler at <code style="color: var(--purple);">src/app/api/webhooks/lemonsqueezy/route.ts</code></div>
+            <div class="step y">Handle: subscription_created, updated, cancelled, payment_success, payment_failed</div>
+            <div class="step r">Build usage tracking in <code style="color: var(--purple);">src/features/billing/usage-tracker.ts</code> <span class="badge">CRITICAL</span></div>
+            <div class="step r">Hard caps per plan (Free: 10, Pro: 500, Scale: 5,000) with upgrade prompt</div>
+            <div class="step y">Build credit reset cron at <code style="color: var(--purple);">src/app/api/cron/reset-credits/route.ts</code></div>
+            <div class="step y">Setup Payoneer as payout in Lemon Squeezy dashboard</div>
+
+            <div style="margin-top: 16px;">
+                <div class="progress"><div class="progress-fill" style="width: 75%; background: var(--yellow);"></div></div>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 8px;">Checkpoint: Users can pay, subscribe, and access gated features!</p>
+            </div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--green-dim); color: var(--green);">W5-6</span>
+                <h3>Phase 5 — Landing Page, SEO &amp; Launch Prep</h3>
+            </div>
+            <div class="step g">Hero section + CTA in <code style="color: var(--purple);">src/app/(marketing)/page.tsx</code></div>
+            <div class="step g">"How It Works" 3-step visual + live demo (1 free generation)</div>
+            <div class="step g">Pricing section using <code style="color: var(--purple);">src/components/billing/PricingTable.tsx</code></div>
+            <div class="step g">FAQ + social proof section</div>
+            <div class="step g">SEO meta tags + Open Graph in root layout</div>
+            <div class="step r">Build programmatic SEO pages in <code style="color: var(--purple);">src/app/(marketing)/icebreakers/[industry]/</code> <span class="badge">NEW</span></div>
+            <div class="step r">Generate static content for 8-10 industries using <code style="color: var(--purple);">scripts/generate-seo-content.ts</code> <span class="badge">NEW</span></div>
+            <div class="step g">Error tracking (Sentry) + Analytics (PostHog)</div>
+            <div class="step g">Rate limiting via <code style="color: var(--purple);">src/lib/rate-limiter.ts</code></div>
+            <div class="step g">Terms + Privacy pages in <code style="color: var(--purple);">src/app/(marketing)/terms/</code> and <code style="color: var(--purple);">privacy/</code></div>
+
+            <div style="margin-top: 16px;">
+                <div class="progress"><div class="progress-fill" style="width: 90%; background: var(--green);"></div></div>
+                <p style="font-size: 0.78rem; color: var(--muted); margin-top: 8px;">Checkpoint: Landing page ready, billing live, SEO pages indexed, monitoring active.</p>
+            </div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div class="card" style="border-color: rgba(46,232,154,0.2);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <span class="mono tag" style="background: var(--green); color: var(--bg);">W6-7</span>
+                <h3>Phase 6 — Deploy, Test &amp; GO LIVE 🚀</h3>
+            </div>
+            <div class="step g">Push to GitHub → auto-deploy on Vercel</div>
+            <div class="step g">Set all env variables on Vercel (including Upstash Redis)</div>
+            <div class="step g">Run prisma db push on production Supabase</div>
+            <div class="step g">Activate Lemon Squeezy live mode</div>
+            <div class="step g">Full end-to-end test: signup → generate → pay → verify webhook</div>
+            <div class="step r">Test CSV with 10, 100, 500 rows — verify queue processing</div>
+            <div class="step g">Mobile responsiveness check</div>
+            <div class="step g">Test Lemon Squeezy → Payoneer → bKash flow</div>
+
+            <div class="grid-4" style="margin-top: 16px;">
+                <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                    <p style="font-weight: 700; font-size: 0.88rem;">Product Hunt</p>
+                    <p style="font-size: 0.75rem; color: var(--muted);">Schedule launch day</p>
+                </div>
+                <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                    <p style="font-weight: 700; font-size: 0.88rem;">Twitter/X</p>
+                    <p style="font-size: 0.75rem; color: var(--muted);">Build in public</p>
+                </div>
+                <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                    <p style="font-weight: 700; font-size: 0.88rem;">Cold Email</p>
+                    <p style="font-size: 0.75rem; color: var(--muted);">Use your own tool!</p>
+                </div>
+                <div style="background: var(--green-dim); border: 2px solid rgba(46,232,154,0.3); border-radius: 10px; padding: 14px; text-align: center;">
+                    <p style="font-weight: 700; font-size: 0.88rem; color: var(--green);">SEO Pages</p>
+                    <p style="font-size: 0.75rem; color: var(--muted);">Programmatic industry pages</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <div class="progress"><div class="progress-fill" style="width: 100%; background: linear-gradient(to right, var(--green), var(--cyan));"></div></div>
+                <p style="font-size: 0.78rem; color: var(--green); margin-top: 8px;">🚀 YOU ARE LIVE! Focus on getting first 10 paying users.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 07: PRODUCTION RISKS ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.25);">⚠️</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--red);">Critical Production Gotchas</p>
+            <h2>5 Risks That Will Break Your SaaS If Ignored</h2>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Risk 1 -->
+        <div class="alert-card">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.25);">⏱️</div>
+                <div>
+                    <h3 style="color: var(--red); font-size: 1.1rem; margin-bottom: 8px;">Risk #1: Vercel Timeout Trap</h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7;">
+                        Vercel serverless functions timeout at 10-60 seconds. Processing 500 GPT-4o-mini calls synchronously will always fail.
+                        <strong style="color: var(--green);">Fix:</strong> Upstash Redis queue in Phase 3 (already integrated into the build plan above).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk 2 -->
+        <div class="alert-card">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.25);">💸</div>
+                <div>
+                    <h3 style="color: var(--red); font-size: 1.1rem; margin-bottom: 8px;">Risk #2: AI API Costs vs Fixed Plans</h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 12px;">
+                        GPT-4o-mini costs ~$0.00016/generation. On Pro plan: 500 × $0.00016 = <strong style="color: var(--green);">$0.08</strong> (93% profit margin on $29).
+                        But you still need hard caps.
+                        <strong style="color: var(--green);">Fix:</strong> Hard credit limits + UsageLog tracking in <code style="color: var(--purple);">src/features/billing/usage-tracker.ts</code>.
+                    </p>
+                    <p style="font-size: 0.82rem; color: var(--red);"><strong>NEVER</strong> offer unlimited AI generation on a fixed monthly fee.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk 3 -->
+        <div class="alert-card">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.25);">🚫</div>
+                <div>
+                    <h3 style="color: var(--red); font-size: 1.1rem; margin-bottom: 8px;">Risk #3: Rate Limiting on Website Scrapers</h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7;">
+                        100 leads from the same domain = 100 rapid scrapes = IP blocked.
+                        <strong style="color: var(--green);">Fix:</strong> 24hr ScraperCache with domain-level dedup in <code style="color: var(--purple);">src/features/scraper/cache.service.ts</code>.
+                        Scrape once per domain per day. Cleanup cron at <code style="color: var(--purple);">src/app/api/cron/cleanup-cache/</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk 4 -->
+        <div class="alert-card" style="border-color: var(--yellow);">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25);">📊</div>
+                <div>
+                    <h3 style="color: var(--yellow); font-size: 1.1rem; margin-bottom: 8px;">Risk #4: No Visibility Into AI Costs Per User</h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7;">
+                        Without per-user cost tracking, you can't identify abusers or optimize pricing.
+                        <strong style="color: var(--green);">Fix:</strong> UsageLog model tracking tokensUsed, estimatedCost, and model per generation.
+                        Build a cost dashboard with <code>groupBy userId</code> queries.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk 5 -->
+        <div class="alert-card" style="border-color: var(--pink);">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--pink-dim); color: var(--pink); border: 1px solid rgba(236,72,153,0.25);">⏳</div>
+                <div>
+                    <h3 style="color: var(--pink); font-size: 1.1rem; margin-bottom: 8px;">Risk #5: Lemon Squeezy 13-Day Hold Period</h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7;">
+                        First payments are held for 13 days (fraud prevention). Day 1 → Day 14 release → Day 15-18 to bKash/BRAC.
+                        <strong style="color: var(--green);">Plan for it:</strong> Budget for 2-3 weeks before first payout. After that, payouts on 1st &amp; 15th monthly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 08: PRODUCT & GTM UPDATES ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,214,208,0.25);">🔄</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--cyan);">Product &amp; GTM Updates <span class="badge">FROM V2</span></p>
+            <h2>Blind Spots Fixed Before Launch</h2>
+            <p style="font-size: 0.88rem; color: var(--muted); margin-top: 8px;">These 4 updates were only in Blueprint V2 — the reason it was selected.</p>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Update 1: LinkedIn -->
+        <div class="alert-card cyan">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,214,208,0.25);">🔗</div>
+                <div>
+                    <h3 style="color: var(--cyan); font-size: 1.1rem; margin-bottom: 8px;">Update #1: LinkedIn URL Edge Case <span class="badge" style="background: var(--cyan);">CRUCIAL</span></h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 14px;">
+                        Leads often provide LinkedIn URLs instead of company websites. Scraping LinkedIn = instant IP ban.
+                    </p>
+                    <div class="solution">
+                        <p class="mono" style="font-size: 0.68rem; color: var(--green); margin-bottom: 10px;">✓ FIX — src/features/scraper/linkedin-detector.ts</p>
+                        <div class="code" style="font-size: 0.66rem;">
+<span class="b">function</span> isLinkedInUrl(url: <span class="c">string</span>): <span class="c">boolean</span> {<br>
+&nbsp;&nbsp;<span class="b">const patterns</span> = [<span class="y">'linkedin.com/in/'</span>, <span class="y">'linkedin.com/company/'</span>];<br>
+&nbsp;&nbsp;<span class="c">return</span> patterns.some(p => url.toLowerCase().includes(p));<br>
+}<br><br>
+<span class="dim">// In scraper.service.ts — skip scrape, fall through to title+company prompt</span><br>
+<span class="c">if</span> (isLinkedInUrl(lead.website)) <span class="c">return</span> <span class="o">null</span>;
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--green); margin-top: 10px;">
+                            <strong>Result:</strong> Users can upload CSVs with LinkedIn URLs without breaking your system.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update 2: Spam Checker -->
+        <div class="alert-card yellow">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25);">📧</div>
+                <div>
+                    <h3 style="color: var(--yellow); font-size: 1.1rem; margin-bottom: 8px;">Update #2: Deliverability &amp; Spam Protection <span class="badge" style="background: var(--yellow);">VALUE ADD</span></h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 14px;">
+                        If AI generates spam-trigger words ("Guarantee," "Free," "Buy now"), emails land in junk. This kills trust.
+                    </p>
+                    <div class="solution">
+                        <p class="mono" style="font-size: 0.68rem; color: var(--green); margin-bottom: 10px;">✓ FIX — src/features/ai/spam-checker.ts</p>
+                        <div class="code" style="font-size: 0.66rem;">
+<span class="b">const SPAM_TRIGGERS</span> = [<br>
+&nbsp;&nbsp;<span class="y">'guarantee'</span>, <span class="y">'free'</span>, <span class="y">'buy now'</span>, <span class="y">'act now'</span>,<br>
+&nbsp;&nbsp;<span class="y">'limited time'</span>, <span class="y">'risk-free'</span>, <span class="y">'click here'</span>, ...<br>
+];<br><br>
+<span class="b">export function</span> checkSpamTriggers(text: <span class="c">string</span>) {<br>
+&nbsp;&nbsp;<span class="b">const flagged</span> = SPAM_TRIGGERS.filter(w => text.toLowerCase().includes(w));<br>
+&nbsp;&nbsp;<span class="c">return</span> { isClean: flagged.length === <span class="g">0</span>, flaggedWords: flagged };<br>
+}<br><br>
+<span class="dim">// Show ⚠️ SPAM RISK badge in src/components/results/SpamBadge.tsx</span>
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--green); margin-top: 10px;">
+                            <strong>Why it matters:</strong> Positions your product as "deliverability-aware" — a free differentiator vs generic AI wrappers.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update 3: Programmatic SEO -->
+        <div class="alert-card green">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,232,154,0.25);">🔍</div>
+                <div>
+                    <h3 style="color: var(--green); font-size: 1.1rem; margin-bottom: 8px;">Update #3: Programmatic SEO for Growth <span class="badge" style="background: var(--green);">GTM FIX</span></h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 14px;">
+                        Product Hunt = 1-3 day spike. Twitter = constant hustle. You need an evergreen channel.
+                    </p>
+                    <div class="solution">
+                        <p class="mono" style="font-size: 0.68rem; color: var(--green); margin-bottom: 10px;">✓ FIX — src/app/(marketing)/icebreakers/[industry]/page.tsx</p>
+                        <div class="grid-3" style="margin-bottom: 14px;">
+                            <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem;">
+                                <span style="color: var(--green);">→</span> Icebreakers for SaaS
+                            </div>
+                            <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem;">
+                                <span style="color: var(--green);">→</span> Icebreakers for Real Estate
+                            </div>
+                            <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem;">
+                                <span style="color: var(--green);">→</span> Icebreakers for Recruiters
+                            </div>
+                            <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem;">
+                                <span style="color: var(--green);">→</span> Icebreakers for Agencies
+                            </div>
+                            <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem;">
+                                <span style="color: var(--green);">→</span> Icebreakers for Fintech
+                            </div>
+                            <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem;">
+                                <span style="color: var(--green);">→</span> Icebreakers for Healthcare
+                            </div>
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.7;">
+                            Each page: H1 SEO title → 3-5 AI examples → "Why generic openers fail" → Live demo → CTA.
+                            Pre-generate content at build time with <code style="color: var(--purple);">scripts/generate-seo-content.ts</code>.
+                            Over 3-6 months, these compound and become your #1 organic traffic source.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update 4: Connection Pooling -->
+        <div class="alert-card orange">
+            <div style="display: flex; gap: 16px;">
+                <div class="risk-icon" style="background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(242,140,62,0.25);">🔌</div>
+                <div>
+                    <h3 style="color: var(--orange); font-size: 1.1rem; margin-bottom: 8px;">Update #4: Supabase Connection Pooling Gotcha <span class="badge" style="background: var(--orange);">INFRA FIX</span></h3>
+                    <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7;">
+                        Prisma + serverless = new DB connection every invocation. Under load → "too many connections" crash.
+                        <strong style="color: var(--green);">Already integrated into Phase 1</strong> — use pooled port 6543, direct port 5432 only for migrations.
+                        The Prisma singleton lives in <code style="color: var(--purple);">src/lib/db/prisma.ts</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 09: USER JOURNEY ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--pink-dim); color: var(--pink); border: 1px solid rgba(236,72,153,0.15);">09</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--pink);">User Journey</p>
+            <h2>Complete User Flow — Start to Finish</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="code">
+<span class="dim">/* ═══ USER JOURNEY ═══ */</span><br><br>
+<span class="g">1.</span> User visits landing page → sees demo<br>
+<span class="g">2.</span> Signs up with Google/GitHub via Supabase Auth<br>
+<span class="g">3.</span> Gets <span class="y">10 free icebreakers</span> (free plan)<br>
+<span class="g">4.</span> Inputs a lead: name, company, role, website<br>
+<span class="g">5.</span> AI generates personalized icebreaker → user copies it<br>
+<span class="g">6.</span> User loves it → hits the <span class="y">free limit</span><br>
+<span class="g">7.</span> Upgrades to <span class="y">Pro ($29/mo)</span> via Lemon Squeezy checkout<br>
+<span class="g">8.</span> Webhook updates user plan in DB<br>
+<span class="g">9.</span> User uploads <span class="b">CSV of 200 leads</span><br>
+<span class="g">10.</span> System queues job → processes in background<br>
+<span class="g">11.</span> Real-time progress → 200 icebreakers generated<br>
+<span class="g">12.</span> Exports as CSV → uses in email campaigns<br>
+<span class="g">13.</span> Stays subscribed → <span class="g">recurring revenue for you</span><br><br>
+<span class="dim">/* ═══ YOUR REVENUE JOURNEY ═══ */</span><br><br>
+<span class="y">$29 payment</span> → <span class="y">Lemon Squeezy</span> → <span class="o">Payoneer</span> → <span style="color: var(--pink);">bKash/BRAC</span> → <span class="g">৳2,854 BDT</span>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 10: POST-LAUNCH ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">∞</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted);">Post-Launch</p>
+            <h2>Scale When Needed</h2>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <p class="mono" style="font-size: 0.68rem; color: var(--green); margin-bottom: 10px;">AT 50+ USERS</p>
+            <div class="step g">Monitor queue health &amp; processing times</div>
+            <div class="step g">Email notifications for completed CSV jobs</div>
+            <div class="step g">Chrome extension for LinkedIn</div>
+            <div class="step g">Analytics dashboard (PostHog/Mixpanel)</div>
+        </div>
+        <div class="card">
+            <p class="mono" style="font-size: 0.68rem; color: var(--blue); margin-bottom: 10px;">AT 200+ USERS</p>
+            <div class="step b">Database read replicas (Supabase supports this)</div>
+            <div class="step b">API caching layer (Redis)</div>
+            <div class="step b">CRM integrations (HubSpot, Apollo, Salesforce)</div>
+            <div class="step b">Consider US LLC + Stripe for lower fees (if $10k+ MRR)</div>
+        </div>
+    </div>
+
+    <div class="alert-card" style="margin-top: 20px; border-color: var(--yellow);">
+        <h3 style="color: var(--yellow); margin-bottom: 10px;">Lemon Squeezy → Stripe Migration (Only at $10k+ MRR)</h3>
+        <p style="font-size: 0.88rem; color: var(--muted); line-height: 1.7;">
+            Start with Lemon Squeezy — it's perfect for launch. At $10k+ MRR, Stripe saves ~$500-1k/month in fees but
+            requires: US LLC formation, tax accountant ($2-5k/yr), 6-8 week migration, dual billing period, and expect 10-30% churn
+            during transition. Don't even think about it until you've validated the product.
+        </p>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 11: SECURITY ══════════════ -->
+<section>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+        <div class="sec-num" style="background: var(--pink-dim); color: var(--pink); border: 1px solid rgba(236,72,153,0.15);">🔒</div>
+        <div>
+            <p class="mono" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--pink);">Security &amp; Compliance</p>
+            <h2>Privacy &amp; Data Protection</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="grid-2" style="gap: 24px;">
+            <div>
+                <p class="mono" style="font-size: 0.68rem; color: var(--green); margin-bottom: 10px;">AUTHENTICATION</p>
+                <div class="step g">Supabase Auth (OAuth + session management)</div>
+                <div class="step g">Row-level security on Supabase tables</div>
+                <div class="step g">Rate limiting via src/lib/rate-limiter.ts</div>
+            </div>
+            <div>
+                <p class="mono" style="font-size: 0.68rem; color: var(--blue); margin-bottom: 10px;">DATA PROTECTION</p>
+                <div class="step b">GDPR &amp; CCPA compliant data handling</div>
+                <div class="step b">User can delete all their data</div>
+                <div class="step b">No long-term storage of personal lead data</div>
+            </div>
+            <div>
+                <p class="mono" style="font-size: 0.68rem; color: var(--yellow); margin-bottom: 10px;">BILLING SECURITY</p>
+                <div class="step y">Lemon Squeezy handles PCI compliance</div>
+                <div class="step y">Webhook signature verification</div>
+                <div class="step y">Never store card details</div>
+            </div>
+            <div>
+                <p class="mono" style="font-size: 0.68rem; color: var(--orange); margin-bottom: 10px;">INPUT VALIDATION</p>
+                <div class="step o">Sanitize all CSV uploads</div>
+                <div class="step o">Validate API inputs with Zod (src/lib/validations.ts)</div>
+                <div class="step o">CORS and security headers</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer style="text-align: center; padding: 48px 0; margin-top: 48px; border-top: 1px solid var(--border);">
+    <p class="mono" style="font-size: 0.7rem; letter-spacing: 0.15em; color: var(--muted);">
+        ICEBREAKER AI — FINAL REWRITTEN BLUEPRINT
+    </p>
+    <p style="font-size: 0.78rem; color: #363a52; margin-top: 8px;">
+        Built for Eh Emon · Bangladesh 🇧🇩 → Serving the World 🌍 · 7 weeks to launch
+    </p>
+    <p style="font-size: 0.78rem; color: var(--green); margin-top: 12px;">
+        ✓ Blueprint V2 selected · ✓ New modular folder structure · ✓ All 4 GTM updates included · ✓ All 5 production risks addressed
+    </p>
+    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">Next.js 14</span>
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">Supabase</span>
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">Prisma</span>
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">GPT-4o-mini</span>
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">Lemon Squeezy</span>
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">Upstash Redis</span>
+        <span class="tag" style="background: var(--surface2); color: var(--muted); border: 1px solid var(--border);">Payoneer</span>
+    </div>
+</footer>
+
+</main>
+</body>
+</html>
