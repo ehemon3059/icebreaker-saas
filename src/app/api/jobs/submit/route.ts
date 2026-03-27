@@ -38,10 +38,10 @@ export async function POST(request: Request) {
   // ── 3. Credit check ───────────────────────────────────────────────────────
   const creditStatus = await checkCredits(user.id)
 
-  if (creditStatus.remaining < leads.length) {
+  if ((creditStatus.limit - creditStatus.used) < leads.length) {
     return NextResponse.json({
       success: false,
-      error: `You need ${leads.length} credits but only have ${creditStatus.remaining}. Remove some leads or upgrade.`,
+      error: `You need ${leads.length} credits but only have ${(creditStatus.limit - creditStatus.used)}. Remove some leads or upgrade.`,
       code: 'INSUFFICIENT_CREDITS',
       credits: creditStatus,
     }, { status: 403 })

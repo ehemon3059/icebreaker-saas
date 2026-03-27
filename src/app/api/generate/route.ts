@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { scrapeWithCache } from '@/features/scraper/cache.service'
 import { generateIcebreaker } from '@/features/ai/gemini.service'
 import { checkForSpam } from '@/features/ai/spam-checker'
-import { checkCredits, deductCredit } from '@/lib/billing/usage'
+import { checkCredits, incrementCredits } from '@/lib/billing/usage'
 import { apiRateLimiter, checkRateLimit } from '@/lib/rate-limit'
 
 // ─── Response helpers ─────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         used: creditStatus.used,
         limit: creditStatus.limit,
         remaining: 0,
-        plan: creditStatus.plan,
+        plan: creditStatus.tier,
       },
     }, { status: 403 })
   }
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
   })
 
   // ── 9. Deduct credit ──────────────────────────────────────────────────────
-  await deductCredit(user.id)
+  await incrementCredits(user.id)
 
   // ── 10. Return structured success response ────────────────────────────────
   return NextResponse.json({
@@ -137,8 +137,8 @@ export async function POST(request: Request) {
       credits: {
         used: creditStatus.used + 1,
         limit: creditStatus.limit,
-        remaining: creditStatus.remaining - 1,
-        plan: creditStatus.plan,
+        remaining: creditStatus.limit - creditStatus.used - 1,
+        plan: creditStatus.tier,
       },
     },
   })
