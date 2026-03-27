@@ -1,143 +1,179 @@
-# 🚀 Quick Start - Supabase Auth Setup
+# IcebreakerAI
 
-## What You Got
+AI-powered cold email icebreaker generator. Upload a CSV of leads, and get unique, personalized opening lines for every prospect — powered by Google Gemini and scraped company context.
 
-✅ **2 Setup Guides** - Complete instructions  
-✅ **9 Code Files** - Ready to use  
-✅ **1 Database Schema** - Prisma schema  
+## Tech Stack
 
----
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Database | Prisma + Supabase (PostgreSQL) |
+| AI | Google Gemini |
+| Queue & Rate Limiting | Upstash Redis |
+| Billing | Lemon Squeezy |
+| Auth | Supabase Auth (Google OAuth + email) |
+| Error Tracking | Sentry |
+| Analytics | PostHog |
+| Deployment | Vercel |
 
-## 📋 Step-by-Step Instructions
+## Getting Started
 
-### Step 1: Read the Setup Guide
-Open `SUPABASE_AUTH_SETUP_GUIDE.md` and follow ALL steps (takes 30-40 min)
+### Prerequisites
 
-This will help you:
-- Create Supabase project
-- Setup Google OAuth
-- Get all credentials
-- Configure everything
+- Node.js 18+
+- npm
+- [Supabase](https://supabase.com) account (free tier works)
+- [Upstash](https://upstash.com) account (free tier works)
+- [Google AI Studio](https://aistudio.google.com) API key
 
-### Step 2: Install Dependencies
+### Local Development
+
 ```bash
-npm install @supabase/supabase-js @supabase/ssr @supabase/auth-ui-react @supabase/auth-ui-shared
-npm install @prisma/client
-npm install -D prisma
-```
+# 1. Clone the repo
+git clone https://github.com/YOUR_USERNAME/icebreaker-saas.git
+cd icebreaker-saas
 
-### Step 3: Setup Your Project Files
+# 2. Install dependencies
+npm install
 
-**Create these folders:**
-```bash
-mkdir -p lib/supabase
-mkdir -p components
-mkdir -p app/auth/login
-mkdir -p app/auth/callback
-mkdir -p app/dashboard
-```
+# 3. Configure environment
+cp .env.example .env.local
+# Fill in all values in .env.local
 
-**Move files to correct locations:**
-```
-middleware.ts           → (project root)/middleware.ts
-lib-prisma.ts          → lib/prisma.ts
-lib-supabase-client.ts → lib/supabase/client.ts
-lib-supabase-server.ts → lib/supabase/server.ts
-lib-supabase-middleware.ts → lib/supabase/middleware.ts
-LogoutButton.tsx       → components/LogoutButton.tsx
-login-page.tsx         → app/auth/login/page.tsx
-auth-callback.ts       → app/auth/callback/route.ts
-dashboard-page.tsx     → app/dashboard/page.tsx
-schema.prisma          → prisma/schema.prisma
-```
+# 4. Push schema to your dev Supabase database
+npx prisma db push
 
-### Step 4: Create .env File
-```bash
-# Create .env in project root
-touch .env
-```
-
-Add this content (get values from Supabase dashboard):
-```
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.xxxxxxxxxxxxx.supabase.co:5432/postgres
-DIRECT_URL=postgresql://postgres:[PASSWORD]@db.xxxxxxxxxxxxx.supabase.co:5432/postgres
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-### Step 5: Run Database Migration
-```bash
-npx prisma migrate dev --name init
+# 5. Generate Prisma client
 npx prisma generate
-```
 
-### Step 6: Test It!
-```bash
+# 6. Start development server
 npm run dev
 ```
 
-Visit: `http://localhost:3000/auth/login`
+Open [http://localhost:3000](http://localhost:3000).
 
----
+### Production Deployment
 
-## ✅ What Should Happen
+```bash
+# 1. Push to GitHub — Vercel detects Next.js and auto-deploys
+git push origin main
 
-1. **Login Page** - Beautiful Google OAuth button
-2. **Click "Continue with Google"** - Redirects to Google
-3. **Sign in with Google** - Use your test user email
-4. **Redirect to Dashboard** - See your stats (all zeros)
-5. **Test Logout** - Click "Sign out", back to login
+# 2. In Vercel dashboard → Project Settings → Environment Variables
+#    Copy every key from .env.local into Vercel
 
----
+# 3. Push Prisma schema to production Supabase (run locally)
+bash scripts/deploy-db.sh
 
-## 🐛 Common Issues
+# 4. In Lemon Squeezy dashboard → Webhooks
+#    Add webhook URL: https://your-domain.com/api/webhooks/lemonsqueezy
+#    Events: subscription_created, subscription_updated,
+#            subscription_cancelled, subscription_payment_success,
+#            subscription_payment_failed
 
-**"Module not found"**
-- Check file locations match the structure guide
-- Make sure folder names are correct
+# 5. Cron jobs are configured automatically via vercel.json
+```
 
-**"Invalid redirect URL"**  
-- Verify Google Cloud Console redirect URI matches Supabase exactly
+## Project Structure
 
-**"Database error"**
-- Check DATABASE_URL password is correct
-- Try URL encoding special characters
+```
+icebreaker-saas/
+├── prisma/
+│   └── schema.prisma          # Database schema
+├── scripts/
+│   ├── deploy-db.sh           # Production DB migration helper
+│   └── seed.ts                # Dev seed data
+├── src/
+│   ├── app/
+│   │   ├── (auth)/            # OAuth callback route
+│   │   ├── (dashboard)/       # /generate page
+│   │   ├── (legal)/           # /terms, /privacy pages
+│   │   ├── api/               # All API route handlers
+│   │   │   ├── generate/      # Single icebreaker generation
+│   │   │   ├── generate-demo/ # Public demo (rate limited)
+│   │   │   ├── jobs/          # Bulk job submit/worker/status/results
+│   │   │   ├── health/        # Health check endpoint
+│   │   │   ├── webhooks/      # Lemon Squeezy billing webhooks
+│   │   │   └── user/          # Credits & profile
+│   │   ├── dashboard/         # Dashboard pages (main, csv, jobs, settings)
+│   │   ├── icebreakers/       # Programmatic SEO pages by industry
+│   │   ├── login/             # Auth pages
+│   │   ├── signup/
+│   │   ├── pricing/
+│   │   ├── page.tsx           # Landing page
+│   │   └── layout.tsx         # Root layout (Navbar, Footer, PostHog)
+│   ├── components/
+│   │   ├── billing/           # CheckoutButton, CreditsIndicator, UpgradeModal
+│   │   ├── csv/               # CsvUploader, CsvColumnMapper, ResultsTable, etc.
+│   │   ├── landing/           # LiveDemo, PricingSection, FaqSection
+│   │   ├── layout/            # Navbar, Footer
+│   │   └── providers/         # PostHogProvider
+│   ├── data/
+│   │   └── industries.ts      # Hardcoded SEO example icebreakers
+│   ├── features/
+│   │   ├── ai/                # Gemini service, spam checker, prompt builder
+│   │   ├── scraper/           # Website scraper + Redis cache
+│   │   ├── billing/           # Billing service, usage tracker
+│   │   └── queue/             # CSV processor, queue service
+│   ├── hooks/                 # useJobProgress, use-credits, use-auth
+│   ├── lib/
+│   │   ├── billing/           # Plan definitions
+│   │   ├── queue/             # Redis client
+│   │   ├── supabase/          # Browser/server Supabase clients
+│   │   ├── env.ts             # Startup env validation
+│   │   ├── prisma.ts          # Prisma client singleton
+│   │   └── rate-limit.ts      # Upstash rate limiters
+│   └── types/                 # Shared TypeScript types
+├── .env.example               # Required environment variables (no secrets)
+├── vercel.json                # Cron jobs, security headers, region config
+├── next.config.ts             # Next.js + Sentry config
+├── proxy.ts                   # Auth middleware (Supabase session refresh)
+└── sentry.*.config.ts         # Sentry client/server/edge configs
+```
 
-**"Access blocked"**
-- Add your email as test user in Google OAuth consent screen
+## Environment Variables
 
----
+See [.env.example](.env.example) for all required variables with descriptions.
 
-## 📚 Documentation Files
+Key variables:
 
-1. **SUPABASE_AUTH_SETUP_GUIDE.md** - Complete Supabase + Google OAuth setup
-2. **FILE_STRUCTURE_GUIDE.md** - Where to put each file
-3. **This file (README.md)** - Quick reference
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Supabase pooled connection (port 6543) |
+| `DIRECT_URL` | Supabase direct connection (port 5432, migrations only) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `GOOGLE_AI_API_KEY` | Google Gemini API key |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token |
+| `LEMONSQUEEZY_WEBHOOK_SECRET` | Lemon Squeezy webhook signing secret |
+| `CRON_SECRET` | Bearer token for authenticating Vercel cron requests |
+| `NEXT_PUBLIC_APP_URL` | Your production domain |
 
----
+## API Routes
 
-## 🎯 What's Next?
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/generate` | Required | Single lead icebreaker generation |
+| `POST` | `/api/generate-demo` | None | Public demo — 2 requests / 24h per IP |
+| `POST` | `/api/jobs/submit` | Required | Submit CSV batch job |
+| `POST` | `/api/jobs/worker` | Cron secret | Background queue processor |
+| `GET` | `/api/jobs/[id]/status` | Required | Job progress polling |
+| `GET` | `/api/jobs/[id]/results` | Required | Fetch completed results |
+| `POST` | `/api/jobs/[id]/regenerate` | Required | Regenerate single lead |
+| `GET` | `/api/user/credits` | Required | Credit usage and limit |
+| `POST` | `/api/webhooks/lemonsqueezy` | HMAC sig | Billing event handler |
+| `GET` | `/api/health` | None | Database + Redis health check |
 
-After auth is working:
-1. Build CSV upload feature
-2. Create lead management
-3. Add Claude AI icebreaker generation
-4. Setup Lemon Squeezy payments
-5. Deploy to production
+## Plans & Credits
 
----
+| Plan | Credits / month | Price |
+|---|---|---|
+| Free | 10 | $0 |
+| Pro | 500 | Configured in Lemon Squeezy |
+| Scale | 5,000 | Configured in Lemon Squeezy |
 
-## 💡 Tips
+Credits reset on each billing cycle via the `subscription_payment_success` webhook.
 
-- Follow the guides in order
-- Don't skip steps in SUPABASE_AUTH_SETUP_GUIDE.md
-- Save all credentials securely
-- Test each step before moving forward
+## License
 
----
-
-**Questions?** Check the troubleshooting sections in the setup guides!
-
-Good luck! 🚀
+MIT

@@ -1,10 +1,10 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// Gemini 2.0 Flash pricing
-const INPUT_COST_PER_TOKEN = 0.10 / 1_000_000  // $0.10 per 1M input tokens
-const OUTPUT_COST_PER_TOKEN = 0.40 / 1_000_000 // $0.40 per 1M output tokens
+// Claude Haiku 4.5 pricing
+const INPUT_COST_PER_TOKEN  = 0.80 / 1_000_000  // $0.80 per 1M input tokens
+const OUTPUT_COST_PER_TOKEN = 4.00 / 1_000_000  // $4.00 per 1M output tokens
 
 const SYSTEM_PROMPT = `You are an expert B2B sales copywriter. Your job is to write a single personalized icebreaker opening line for a cold email or LinkedIn message.
 
@@ -42,24 +42,23 @@ export async function generateIcebreaker(params: GenerateParams): Promise<Genera
 
   const userPrompt = `Write a cold email icebreaker for ${name}, who is ${title} at ${company}.\nCompany context: ${contextLine}`
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      temperature: 0.8,
-      maxOutputTokens: 60,
-    },
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 60,
+    temperature: 0.8,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: userPrompt }],
   })
 
-  const result = await model.generateContent(userPrompt)
-  const response = result.response
+  const content = response.content[0]
+  if (content.type !== 'text') throw new Error('Unexpected response type from Claude')
 
-  const message = response.text().trim()
-  const promptTokens = response.usageMetadata?.promptTokenCount ?? 0
-  const completionTokens = response.usageMetadata?.candidatesTokenCount ?? 0
-  const tokensUsed = promptTokens + completionTokens
+  const message = content.text.trim()
+  const inputTokens  = response.usage.input_tokens
+  const outputTokens = response.usage.output_tokens
+  const tokensUsed   = inputTokens + outputTokens
   const estimatedCost =
-    promptTokens * INPUT_COST_PER_TOKEN + completionTokens * OUTPUT_COST_PER_TOKEN
+    inputTokens * INPUT_COST_PER_TOKEN + outputTokens * OUTPUT_COST_PER_TOKEN
 
   return { message, tokensUsed, estimatedCost }
 }

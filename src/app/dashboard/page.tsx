@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import LogoutButton from '@/components/LogoutButton'
 
@@ -52,9 +53,9 @@ export default async function DashboardPage() {
           <p className="text-sm text-gray-500">
             Upload a CSV or add leads manually to get started.
           </p>
-          <button className="mt-2 inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
+          <Link href="/dashboard/csv" className="mt-2 inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-colors">
             Add Leads
-          </button>
+          </Link>
         </div>
       </main>
     </div>

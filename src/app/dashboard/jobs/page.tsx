@@ -42,7 +42,7 @@ export default async function JobsPage() {
             </p>
           </div>
           <Link
-            href="/dashboard/bulk"
+            href="/dashboard/csv"
             className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
           >
             + Upload CSV
@@ -58,7 +58,7 @@ export default async function JobsPage() {
               Upload a CSV to start bulk generating icebreakers.
             </p>
             <Link
-              href="/dashboard/bulk"
+              href="/dashboard/csv"
               className="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
             >
               Upload CSV

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Zap } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
@@ -22,20 +22,16 @@ export default function Navbar() {
   // Auth state
   useEffect(() => {
     const supabase = createClient()
-
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => setUser(session?.user ?? null)
     )
-
     return () => subscription.unsubscribe()
   }, [])
 
   // Credits for logged-in users
   useEffect(() => {
     if (!user) { setCredits(null); return }
-
     fetch('/api/user/credits')
       .then((r) => r.ok ? r.json() : null)
       .then((json) => {
@@ -63,56 +59,129 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={[
-          'fixed inset-x-0 top-0 z-50 bg-white transition-shadow duration-200',
-          scrolled ? 'shadow-sm' : 'border-b border-gray-100',
-        ].join(' ')}
+        style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          zIndex: 100,
+          padding: '0',
+          background: scrolled ? 'rgba(10,10,10,0.95)' : 'rgba(10,10,10,0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          transition: 'background 0.2s, box-shadow 0.2s',
+          boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.5)' : 'none',
+        }}
       >
-        <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+        <nav
+          style={{
+            maxWidth: '1100px',
+            margin: '0 auto',
+            padding: '0 24px',
+            height: '64px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-semibold text-gray-900">
-            <Zap size={18} className="text-blue-600" fill="currentColor" />
-            IcebreakerAI
+          <Link
+            href="/"
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}
+          >
+            <div
+              style={{
+                width: '30px', height: '30px', borderRadius: '8px',
+                background: '#22d07a',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '15px', flexShrink: 0,
+              }}
+            >
+              ❄
+            </div>
+            <span
+              style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: '1.15rem',
+                color: '#e8eaf2',
+                fontWeight: 400,
+              }}
+            >
+              IcebreakerAI
+            </span>
           </Link>
 
-          {/* Desktop links */}
-          <div className="hidden items-center gap-6 md:flex">
+          {/* Desktop nav links */}
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: '28px' }}>
+            <Link href="/#how" style={{ color: '#7a7f96', textDecoration: 'none', fontSize: '0.88rem' }}>
+              How it works
+            </Link>
+            <Link href="/#demo" style={{ color: '#7a7f96', textDecoration: 'none', fontSize: '0.88rem' }}>
+              Live demo
+            </Link>
+            <Link href="/#pricing" style={{ color: '#7a7f96', textDecoration: 'none', fontSize: '0.88rem' }}>
+              Pricing
+            </Link>
+          </div>
+
+          {/* Desktop CTA */}
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: '10px' }}>
             {user ? (
               <>
-                <Link href="/#pricing" className="text-sm text-gray-600 hover:text-gray-900">
-                  Pricing
-                </Link>
                 {remaining !== null && (
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                    {remaining.toLocaleString()} credits left
+                  <span
+                    style={{
+                      padding: '5px 12px', borderRadius: '100px',
+                      background: 'rgba(34,208,122,0.1)',
+                      border: '1px solid rgba(34,208,122,0.2)',
+                      color: '#22d07a', fontSize: '0.78rem', fontWeight: 500,
+                    }}
+                  >
+                    {remaining.toLocaleString()} credits
                   </span>
                 )}
                 <Link
                   href="/dashboard"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                  style={{
+                    padding: '8px 18px', borderRadius: '8px',
+                    background: '#22d07a', color: '#0a0a0a',
+                    fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none',
+                  }}
                 >
                   Dashboard
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="text-sm text-gray-500 hover:text-gray-800"
+                  style={{
+                    background: 'none', border: 'none',
+                    color: '#7a7f96', fontSize: '0.85rem', cursor: 'pointer',
+                    padding: '8px 4px',
+                  }}
                 >
                   Sign out
                 </button>
               </>
             ) : (
               <>
-                <Link href="/#pricing" className="text-sm text-gray-600 hover:text-gray-900">
-                  Pricing
-                </Link>
-                <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900">
-                  Login
-                </Link>
                 <Link
                   href="/login"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                  style={{
+                    padding: '8px 16px', borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.14)',
+                    background: 'transparent', color: '#e8eaf2',
+                    fontSize: '0.85rem', textDecoration: 'none',
+                  }}
                 >
-                  Get Started
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  style={{
+                    padding: '8px 18px', borderRadius: '8px',
+                    background: '#22d07a', color: '#0a0a0a',
+                    fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none',
+                  }}
+                >
+                  Start free →
                 </Link>
               </>
             )}
@@ -121,10 +190,19 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            className="rounded-md p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+            className="md:hidden"
+            style={{
+              background: 'none',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '8px', padding: '7px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
             aria-label="Toggle menu"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {menuOpen
+              ? <X size={18} color="#e8eaf2" />
+              : <Menu size={18} color="#e8eaf2" />
+            }
           </button>
         </nav>
       </header>
@@ -132,38 +210,45 @@ export default function Navbar() {
       {/* Mobile drawer */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-40 md:hidden"
+          className="md:hidden"
+          style={{ position: 'fixed', inset: 0, zIndex: 99 }}
           onClick={() => setMenuOpen(false)}
         >
           <div
-            className="absolute inset-x-0 top-16 border-b border-gray-100 bg-white px-4 pb-6 pt-4 shadow-lg"
+            style={{
+              position: 'absolute', top: '64px', left: 0, right: 0,
+              background: '#111318',
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              padding: '20px 24px 28px',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex flex-col gap-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <Link href="/#how" onClick={() => setMenuOpen(false)} style={{ color: '#7a7f96', textDecoration: 'none', fontSize: '0.92rem' }}>How it works</Link>
+              <Link href="/#demo" onClick={() => setMenuOpen(false)} style={{ color: '#7a7f96', textDecoration: 'none', fontSize: '0.92rem' }}>Live demo</Link>
+              <Link href="/#pricing" onClick={() => setMenuOpen(false)} style={{ color: '#7a7f96', textDecoration: 'none', fontSize: '0.92rem' }}>Pricing</Link>
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
               {user ? (
                 <>
                   {remaining !== null && (
-                    <span className="w-fit rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                    <span style={{ color: '#22d07a', fontSize: '0.82rem' }}>
                       {remaining.toLocaleString()} credits left
                     </span>
                   )}
                   <Link
                     href="/dashboard"
                     onClick={() => setMenuOpen(false)}
-                    className="text-sm font-medium text-gray-900"
+                    style={{
+                      display: 'block', padding: '12px', borderRadius: '8px',
+                      background: '#22d07a', color: '#0a0a0a',
+                      fontSize: '0.92rem', fontWeight: 600, textDecoration: 'none', textAlign: 'center',
+                    }}
                   >
                     Dashboard
                   </Link>
-                  <Link
-                    href="/#pricing"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-sm text-gray-600"
-                  >
-                    Pricing
-                  </Link>
                   <button
                     onClick={handleSignOut}
-                    className="text-left text-sm text-gray-500"
+                    style={{ background: 'none', border: 'none', color: '#7a7f96', fontSize: '0.92rem', cursor: 'pointer', textAlign: 'left', padding: 0 }}
                   >
                     Sign out
                   </button>
@@ -171,25 +256,22 @@ export default function Navbar() {
               ) : (
                 <>
                   <Link
-                    href="/#pricing"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-sm text-gray-600"
-                  >
-                    Pricing
-                  </Link>
-                  <Link
                     href="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="text-sm text-gray-600"
+                    style={{ color: '#e8eaf2', textDecoration: 'none', fontSize: '0.92rem' }}
                   >
-                    Login
+                    Log in
                   </Link>
                   <Link
-                    href="/login"
+                    href="/signup"
                     onClick={() => setMenuOpen(false)}
-                    className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                    style={{
+                      display: 'block', padding: '12px', borderRadius: '8px',
+                      background: '#22d07a', color: '#0a0a0a',
+                      fontSize: '0.92rem', fontWeight: 600, textDecoration: 'none', textAlign: 'center',
+                    }}
                   >
-                    Get Started
+                    Start free →
                   </Link>
                 </>
               )}
@@ -199,7 +281,7 @@ export default function Navbar() {
       )}
 
       {/* Spacer so page content starts below the fixed navbar */}
-      <div className="h-16" />
+      <div style={{ height: '64px' }} />
     </>
   )
 }

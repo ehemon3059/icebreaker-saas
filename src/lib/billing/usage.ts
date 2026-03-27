@@ -4,35 +4,32 @@ export async function checkCredits(userId: string): Promise<{
   hasCredits: boolean
   used: number
   limit: number
-  remaining: number
-  plan: string
+  tier: string
 }> {
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { creditsUsed: true, creditLimit: true, subscriptionTier: true },
+    select: {
+      creditsUsed: true,
+      creditLimit: true,
+      subscriptionTier: true,  // ← correct field name
+    },
   })
 
-  const remaining = Math.max(0, user.creditLimit - user.creditsUsed)
+  if (!user) {
+    throw new Error(`User ${userId} not found. Auth callback may not have synced.`)
+  }
 
   return {
-    hasCredits: remaining > 0,
+    hasCredits: user.creditsUsed < user.creditLimit,
     used: user.creditsUsed,
     limit: user.creditLimit,
-    remaining,
-    plan: user.subscriptionTier,
+    tier: user.subscriptionTier,
   }
 }
 
-export async function deductCredit(userId: string): Promise<void> {
+export async function incrementCredits(userId: string): Promise<void> {
   await prisma.user.update({
     where: { id: userId },
     data: { creditsUsed: { increment: 1 } },
-  })
-}
-
-export async function deductCredits(userId: string, count: number): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { creditsUsed: { increment: count } },
   })
 }

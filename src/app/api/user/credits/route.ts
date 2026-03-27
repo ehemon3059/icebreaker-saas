@@ -10,20 +10,31 @@ export async function GET() {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  const dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.upsert({
     where: { id: user.id },
-    select: { creditsUsed: true, creditLimit: true },
+    update: {}, // don't overwrite anything on re-login
+    create: {
+      id: user.id,
+      email: user.email!,
+      name: user.user_metadata?.full_name ?? null,
+      avatarUrl: user.user_metadata?.avatar_url ?? null,
+      subscriptionTier: 'FREE',  // ← matches your schema
+      creditLimit: 10,
+      creditsUsed: 0,
+    },
+    select: {
+      creditsUsed: true,
+      creditLimit: true,
+      subscriptionTier: true,  // ← matches your schema
+    },
   })
-
-  if (!dbUser) {
-    return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
-  }
 
   return NextResponse.json({
     success: true,
     data: {
       used: dbUser.creditsUsed,
       limit: dbUser.creditLimit,
+      tier: dbUser.subscriptionTier,
     },
   })
 }

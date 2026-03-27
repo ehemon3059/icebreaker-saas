@@ -125,6 +125,10 @@ export async function POST(request: Request) {
         failedLeads: totalFailed,
       },
     })
+    console.info(
+      `[worker] Job ${jobId} ${finalStatus} — ${totalProcessed}/${job.totalLeads} leads processed` +
+      (totalFailed > 0 ? `, ${totalFailed} failed` : '')
+    )
 
     // ── 7. Credit deduction — only for successful generations ───────────────
     const creditsToCharge = batchProcessed
