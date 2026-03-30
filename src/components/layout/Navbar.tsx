@@ -187,6 +187,29 @@ export default function Navbar() {
 
             {user ? (
               <>
+                {/* Logged-in nav links */}
+                {[
+                  { label: 'Dashboard', href: '/dashboard' },
+                  { label: 'Jobs', href: '/dashboard/jobs' },
+                  { label: 'Profile', href: '/dashboard/profile' },
+                ].map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    style={{
+                      color: 'var(--text-secondary)',
+                      textDecoration: 'none',
+                      fontSize: '0.9rem',
+                      fontWeight: 500,
+                      fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
+                      transition: 'color 0.25s cubic-bezier(.4,0,.2,1)',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--purple-main)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
                 {remaining !== null && (
                   <span
                     style={{
@@ -200,19 +223,6 @@ export default function Navbar() {
                     {remaining.toLocaleString()} credits
                   </span>
                 )}
-                <Link
-                  href="/dashboard"
-                  style={{
-                    padding: '9px 18px', borderRadius: '8px',
-                    background: 'var(--purple-main)', color: '#ffffff',
-                    fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none',
-                    transition: 'background 0.25s cubic-bezier(.4,0,.2,1)',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--purple-deep)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--purple-main)')}
-                >
-                  Dashboard
-                </Link>
                 <button
                   onClick={handleSignOut}
                   style={{
@@ -324,17 +334,23 @@ export default function Navbar() {
                       {remaining.toLocaleString()} credits left
                     </span>
                   )}
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMenuOpen(false)}
-                    style={{
-                      display: 'block', padding: '12px', borderRadius: '12px',
-                      background: 'var(--purple-main)', color: '#ffffff',
-                      fontSize: '0.92rem', fontWeight: 600, textDecoration: 'none', textAlign: 'center',
-                    }}
-                  >
-                    Dashboard
-                  </Link>
+                  {[
+                    { label: 'Dashboard', href: '/dashboard' },
+                    { label: 'Jobs', href: '/dashboard/jobs' },
+                    { label: 'Profile', href: '/dashboard/profile' },
+                  ].map((link) => (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      style={{
+                        color: 'var(--text-primary)', textDecoration: 'none',
+                        fontSize: '0.95rem', fontWeight: 500,
+                      }}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                   <button
                     onClick={handleSignOut}
                     style={{
