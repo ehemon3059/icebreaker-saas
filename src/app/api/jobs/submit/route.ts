@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { redis, QUEUE_KEY } from '@/lib/queue/redis'
 import type { ParsedLead } from '@/components/csv/CsvColumnMapper'
 import { checkCredits } from '@/lib/billing/usage'
+import { processQueue } from '@/lib/queue/process-queue'
 
 // ─── Response helpers ─────────────────────────────────────────────────────────
 
@@ -77,12 +78,10 @@ export async function POST(request: Request) {
   // Never push lead data — avoids payload size limits on large CSVs.
   await redis.lpush(QUEUE_KEY, job.id)
 
-  // ── 7. Trigger worker immediately (fire-and-forget) ───────────────────────
-  const workerUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/api/jobs/worker`
-  fetch(workerUrl, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
-  }).catch(() => null) // ignore errors — cron is the fallback
+  // ── 7. Trigger worker after response is sent (no HTTP call needed) ──────────
+  after(async () => {
+    await processQueue().catch(() => null)
+  })
 
   // ── 8. Return immediately — worker handles the rest ──────────────────────
   return NextResponse.json({
