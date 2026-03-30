@@ -5,6 +5,10 @@
       "schedule": "0 0 * * *"
     }
   ],
+  "functions": {
+    "src/app/api/jobs/worker/route.ts": { "maxDuration": 300 },
+    "src/app/api/jobs/submit/route.ts": { "maxDuration": 300 }
+  },
   "headers": [
     {
       "source": "/api/webhooks/(.*)",

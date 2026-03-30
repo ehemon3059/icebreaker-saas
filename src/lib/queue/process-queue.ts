@@ -5,7 +5,7 @@ import { generateIcebreaker } from '@/features/ai/gemini.service'
 import { checkForSpam } from '@/features/ai/spam-checker'
 
 const BATCH_SIZE = 50
-const LEAD_DELAY_MS = 500
+const LEAD_DELAY_MS = 100
 
 export async function processQueue() {
   const jobId = await redis.rpop<string>(QUEUE_KEY)
