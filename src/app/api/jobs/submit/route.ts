@@ -77,7 +77,14 @@ export async function POST(request: Request) {
   // Never push lead data — avoids payload size limits on large CSVs.
   await redis.lpush(QUEUE_KEY, job.id)
 
-  // ── 7. Return immediately — worker handles the rest ──────────────────────
+  // ── 7. Trigger worker immediately (fire-and-forget) ───────────────────────
+  const workerUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/api/jobs/worker`
+  fetch(workerUrl, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
+  }).catch(() => null) // ignore errors — cron is the fallback
+
+  // ── 8. Return immediately — worker handles the rest ──────────────────────
   return NextResponse.json({
     success: true,
     data: { jobId: job.id },
