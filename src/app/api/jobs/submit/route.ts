@@ -79,7 +79,9 @@ export async function POST(request: Request) {
   await redis.lpush(QUEUE_KEY, job.id)
 
   // ── 7. Trigger worker via QStash (works on Vercel Hobby) ─────────────────
-  await triggerWorker().catch(() => null)
+  await triggerWorker().catch((err) => {
+    console.error('[submit] QStash trigger failed:', err?.message ?? err)
+  })
 
   // ── 8. Return immediately — worker handles the rest ──────────────────────
   return NextResponse.json({

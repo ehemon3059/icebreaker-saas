@@ -9,17 +9,22 @@ export async function triggerWorker() {
   const cronSecret = process.env.CRON_SECRET
 
   if (!token || !cronSecret) {
-    console.warn('[qstash] Missing QSTASH_TOKEN or CRON_SECRET — skipping trigger')
+    console.error('[qstash] Missing env vars — QSTASH_TOKEN:', !!token, 'CRON_SECRET:', !!cronSecret)
     return
   }
 
+  const workerUrl = `${siteUrl}/api/jobs/worker`
+  console.log('[qstash] Publishing to:', workerUrl)
+
   const client = new Client({ token })
 
-  await client.publish({
-    url: `${siteUrl}/api/jobs/worker`,
+  const result = await client.publish({
+    url: workerUrl,
     method: 'POST',
     headers: {
       Authorization: `Bearer ${cronSecret}`,
     },
   })
+
+  console.log('[qstash] Published successfully, messageId:', result.messageId)
 }
