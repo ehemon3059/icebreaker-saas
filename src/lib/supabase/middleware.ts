@@ -44,12 +44,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect unauthenticated users away from /admin (except /admin/login)
-  if (!user &&
-      request.nextUrl.pathname.startsWith('/admin') &&
-      !request.nextUrl.pathname.startsWith('/admin/login')) {
+  // Redirect unauthenticated users away from /admin to main login
+  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/admin/login'
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 

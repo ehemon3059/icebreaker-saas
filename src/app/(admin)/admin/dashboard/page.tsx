@@ -6,14 +6,14 @@ export default async function AdminDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/admin/login')
+  if (!user) redirect('/login')
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
     select: { isAdmin: true },
   })
 
-  if (!dbUser?.isAdmin) redirect('/admin/login')
+  if (!dbUser?.isAdmin) redirect('/')
 
   const [users, leads, messages, subscriptions, campaigns, processingJobs, usageLogs] =
     await Promise.all([
