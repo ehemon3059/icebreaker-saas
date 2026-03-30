@@ -1,10 +1,10 @@
-import { NextResponse, after } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { redis, QUEUE_KEY } from '@/lib/queue/redis'
 import type { ParsedLead } from '@/components/csv/CsvColumnMapper'
 import { checkCredits } from '@/lib/billing/usage'
-import { processQueue } from '@/lib/queue/process-queue'
+import { triggerWorker } from '@/lib/queue/qstash'
 
 // ─── Response helpers ─────────────────────────────────────────────────────────
 
@@ -78,10 +78,8 @@ export async function POST(request: Request) {
   // Never push lead data — avoids payload size limits on large CSVs.
   await redis.lpush(QUEUE_KEY, job.id)
 
-  // ── 7. Trigger worker after response is sent (no HTTP call needed) ──────────
-  after(async () => {
-    await processQueue().catch(() => null)
-  })
+  // ── 7. Trigger worker via QStash (works on Vercel Hobby) ─────────────────
+  await triggerWorker().catch(() => null)
 
   // ── 8. Return immediately — worker handles the rest ──────────────────────
   return NextResponse.json({

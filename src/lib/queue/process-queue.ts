@@ -3,9 +3,11 @@ import { redis, QUEUE_KEY } from '@/lib/queue/redis'
 import { scrapeWithCache } from '@/features/scraper/cache.service'
 import { generateIcebreaker } from '@/features/ai/gemini.service'
 import { checkForSpam } from '@/features/ai/spam-checker'
+import { triggerWorker } from '@/lib/queue/qstash'
 
-const BATCH_SIZE = 50
-const LEAD_DELAY_MS = 100
+// Process 1 lead per invocation — fits in Vercel Hobby's 10s limit.
+// If more leads remain, re-triggers itself via QStash.
+const BATCH_SIZE = 1
 
 export async function processQueue() {
   const jobId = await redis.rpop<string>(QUEUE_KEY)
@@ -68,10 +70,6 @@ export async function processQueue() {
       console.error(`[worker] Failed lead ${lead.id} in job ${jobId}:`, err)
       batchFailed++
     }
-
-    if (lead !== batch[batch.length - 1]) {
-      await new Promise((resolve) => setTimeout(resolve, LEAD_DELAY_MS))
-    }
   }
 
   const totalProcessed = job.processedLeads + batchProcessed
@@ -91,11 +89,13 @@ export async function processQueue() {
       })
     }
   } else {
+    // More leads remain — update progress, re-queue, trigger next invocation
     await prisma.processingJob.update({
       where: { id: jobId },
       data: { status: 'pending', processedLeads: totalProcessed, failedLeads: totalFailed },
     })
     await redis.lpush(QUEUE_KEY, jobId)
+    await triggerWorker() // QStash will call worker again for next lead
   }
 
   return { jobId, batchProcessed, batchFailed, totalProcessed, isJobComplete }
