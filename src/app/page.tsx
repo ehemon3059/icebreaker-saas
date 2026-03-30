@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import LiveDemo from '@/components/landing/LiveDemo'
 import PricingSection from '@/components/landing/PricingSection'
 import FaqSection from '@/components/landing/FaqSection'
 import PreviewTableCopy from '@/components/landing/PreviewTableCopy'
 
 export const metadata: Metadata = {
-  title: 'IcebreakerAI — Write Perfect Cold Email Openers in Seconds',
+  title: 'IcebreakerAI — Write Personalized Cold Email Openers in Seconds',
   description:
-    'Upload your lead list and our AI writes personalized icebreakers that actually get replies. No more generic templates. Used by 500+ sales teams worldwide.',
+    'IcebreakerAI reads your prospect\'s company website and writes a unique, relevant opening line for every lead on your list. Upload a CSV. Get replies.',
   openGraph: {
-    title: 'IcebreakerAI — Write Perfect Cold Email Openers in Seconds',
-    description: 'Generate personalized cold email icebreakers using AI.',
+    title: 'IcebreakerAI — Write Personalized Cold Email Openers in Seconds',
+    description: 'Upload a CSV. Get personalized cold email openers powered by AI.',
     url: '/',
   },
 }
@@ -40,12 +41,6 @@ const PREVIEW_ROWS = [
 
 const LOGOS = ['Lemlist', 'Instantly.ai', 'Apollo.io', 'Smartlead', 'HubSpot', 'Salesforce']
 
-const STATS = [
-  { num: '500+', label: 'Sales teams worldwide' },
-  { num: '2M+', label: 'Icebreakers generated' },
-  { num: '8.4×', label: 'Higher reply rates' },
-]
-
 const STEPS = [
   {
     num: '01',
@@ -70,207 +65,266 @@ const STEPS = [
   },
 ]
 
-// ─── Colour tokens (avoids repetition) ────────────────────────────────────────
+const FEATURES = [
+  {
+    icon: '🧠',
+    title: 'Website-Aware AI',
+    description: 'The AI reads your prospect\'s company website — not just their job title — to write something they\'ll actually notice.',
+  },
+  {
+    icon: '📁',
+    title: 'CSV Bulk Upload',
+    description: 'Upload hundreds of leads at once. Our smart column mapper handles messy CSV headers automatically.',
+  },
+  {
+    icon: '⬇️',
+    title: 'One-Click Export',
+    description: 'Download your enriched CSV with an icebreaker column added, ready to import into your outreach tool.',
+  },
+  {
+    icon: '🎯',
+    title: 'Industry-Aware Tone',
+    description: 'The AI adapts its writing style to match the industry — different tone for SaaS, recruiting, real estate, and agencies.',
+  },
+  {
+    icon: '⚡',
+    title: 'Results in Under 60 Seconds',
+    description: 'Most batches complete in under a minute. Priority processing for Pro and Scale plans.',
+  },
+  {
+    icon: '🔑',
+    title: 'Credit-Based System',
+    description: 'You only use a credit when an icebreaker is successfully generated. Failed scrapes don\'t cost you anything.',
+  },
+  {
+    icon: '✅',
+    title: 'AI Output You Control',
+    description: 'Every icebreaker is shown to you before it reaches anyone\'s inbox. You review, edit, or discard any output before exporting. The AI assists your judgment — it does not replace it.',
+  },
+]
 
-const c = {
-  black:      '#0a0a0a',
-  ink:        '#111318',
-  surface:    '#16181f',
-  card:       '#1c1f2a',
-  border:     'rgba(255,255,255,0.08)',
-  border2:    'rgba(255,255,255,0.14)',
-  text:       '#e8eaf2',
-  muted:      '#7a7f96',
-  dim:        '#3e4259',
-  green:      '#22d07a',
-  greenDim:   'rgba(34,208,122,0.08)',
-  greenBorder:'rgba(34,208,122,0.2)',
-} as const
+const SECURITY_POINTS = [
+  {
+    icon: '🔒',
+    title: 'HTTPS Encrypted',
+    description: 'All data transferred between your browser and IcebreakerAI is protected by HTTPS encryption. Your credentials and lead data are never sent in plain text.',
+  },
+  {
+    icon: '🛡️',
+    title: 'Secure Authentication',
+    description: 'Login is handled through Google OAuth or password-based auth with industry-standard token management. We never store your raw password.',
+  },
+  {
+    icon: '🔐',
+    title: 'Data Isolation',
+    description: 'Your account data, lead lists, and generated icebreakers are isolated per user. No user can access another user\'s data.',
+  },
+  {
+    icon: '🇪🇺',
+    title: 'GDPR Aligned',
+    description: 'We follow GDPR principles for data collection, storage, and deletion — including your right to access or delete your data at any time.',
+  },
+  {
+    icon: '🚫',
+    title: 'No Spam Policy',
+    description: 'IcebreakerAI is a writing assistant. We do not send emails on your behalf. We do not access your email inbox. We do not share your prospect data.',
+  },
+]
 
-// ─── Reusable section-tag ─────────────────────────────────────────────────────
-
-function SectionTag({ label, center = false }: { label: string; center?: boolean }) {
-  return (
-    <p
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        justifyContent: center ? 'center' : undefined,
-        fontSize: '0.72rem',
-        color: c.green,
-        textTransform: 'uppercase',
-        letterSpacing: '0.15em',
-        marginBottom: '16px',
-      }}
-    >
-      <span style={{ width: '20px', height: '1px', background: c.green, display: 'inline-block' }} />
-      {label}
-    </p>
-  )
-}
+const USE_CASES = [
+  {
+    role: 'SaaS Sales',
+    icon: '💼',
+    description: 'Reference the prospect\'s product, recent growth, or tech stack to open with genuine relevance.',
+  },
+  {
+    role: 'Recruiting',
+    icon: '🎯',
+    description: 'Personalize outreach with company hiring context, culture signals, and team growth patterns.',
+  },
+  {
+    role: 'Real Estate',
+    icon: '🏠',
+    description: 'Connect with buyers, sellers, and developers using property and market-specific opening lines.',
+  },
+  {
+    role: 'Marketing Agencies',
+    icon: '📣',
+    description: 'Scale outbound for clients with AI-written openers tailored to each prospect\'s business.',
+  },
+]
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   return (
-    <div
-      style={{
-        background: c.black,
-        color: c.text,
-        fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif",
-        overflowX: 'hidden',
-        minHeight: '100vh',
-      }}
-    >
+    <div style={{ background: 'var(--bg)', color: 'var(--text-primary)', overflowX: 'hidden' }}>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════════════════════════════
           HERO
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section style={{ padding: '100px 0 80px', textAlign: 'center', position: 'relative' }}>
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 0 64px', textAlign: 'center', position: 'relative' }}>
         {/* Radial glow */}
         <div
+          aria-hidden="true"
           style={{
-            position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)',
-            width: '700px', height: '450px', borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(34,208,122,0.1) 0%, transparent 70%)',
+            position: 'absolute', top: '0%', left: '50%', transform: 'translateX(-50%)',
+            width: '700px', height: '400px', borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(107,78,255,0.12) 0%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
 
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px', position: 'relative' }}>
 
-          {/* Badge */}
-          <div style={{ marginBottom: '32px' }}>
+          {/* Beta badge */}
+          <div style={{ marginBottom: '24px' }}>
             <span
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
-                padding: '6px 16px', borderRadius: '100px',
-                border: '1px solid rgba(34,208,122,0.25)',
-                background: 'rgba(34,208,122,0.06)',
-                fontSize: '0.78rem', color: c.green,
+                padding: '5px 14px', borderRadius: '999px',
+                border: '1px solid var(--purple-s2)',
+                background: 'var(--purple-s1)',
+                fontSize: '0.75rem', color: 'var(--purple-main)', fontWeight: 500,
               }}
             >
               <span
                 style={{
                   width: '6px', height: '6px', borderRadius: '50%',
-                  background: c.green, display: 'inline-block',
-                  animation: 'pulse 2s infinite',
+                  background: 'var(--accent-green)', display: 'inline-block',
                 }}
               />
-              AI-powered cold email personalization
+              Currently in Beta — Early users welcome
             </span>
           </div>
 
           {/* Headline */}
           <h1
             style={{
-              fontFamily: "'Georgia', 'Times New Roman', serif",
-              fontSize: 'clamp(2.6rem, 6vw, 4.8rem)',
-              fontWeight: 400,
+              fontFamily: 'var(--font-sora), Sora, sans-serif',
+              fontSize: 'clamp(2.4rem, 5.5vw, 4.2rem)',
+              fontWeight: 800,
               lineHeight: 1.1,
               letterSpacing: '-0.02em',
               marginBottom: '24px',
-              color: c.text,
+              color: 'var(--text-primary)',
             }}
           >
-            Write Perfect Cold Email
+            Write Personalized Cold Email
             <br />
-            Openers{' '}
-            <em style={{ fontStyle: 'italic', color: c.green }}>in Seconds</em>
+            <span style={{ color: 'var(--purple-main)' }}>Openers in Seconds</span>
+            {' '}— Not Hours
           </h1>
 
           {/* Sub-headline */}
           <p
             style={{
-              fontSize: '1.1rem', color: c.muted,
-              maxWidth: '560px', margin: '0 auto 40px', lineHeight: 1.7,
+              fontSize: '1.1rem',
+              color: 'var(--text-secondary)',
+              maxWidth: '560px',
+              margin: '0 auto 40px',
+              lineHeight: 1.7,
+              fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
             }}
           >
-            Upload your lead list. Our AI scrapes their company website and writes a personalized
-            icebreaker for every single prospect. No more generic &ldquo;Hope you&apos;re well.&rdquo;
+            IcebreakerAI reads your prospect&apos;s company website and writes a unique, relevant
+            opening line for every lead on your list. Upload a CSV. Get replies.
           </p>
 
           {/* CTA buttons */}
           <div
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '14px', flexWrap: 'wrap', marginBottom: '20px',
+              gap: '14px', flexWrap: 'wrap', marginBottom: '24px',
             }}
           >
-            <a
+            <Link
               href="/signup"
               style={{
-                padding: '14px 32px', borderRadius: '10px',
-                background: c.green, color: '#0a0a0a',
+                padding: '14px 32px', borderRadius: '999px',
+                background: 'var(--purple-main)', color: '#ffffff',
                 fontSize: '1rem', fontWeight: 600,
                 textDecoration: 'none', display: 'inline-block',
-                transition: 'background 0.2s',
+                boxShadow: '0 4px 20px rgba(107,78,255,0.35)',
+                transition: 'background 0.25s cubic-bezier(.4,0,.2,1)',
               }}
             >
-              Generate free icebreakers →
-            </a>
+              Start Free — No Credit Card Required
+            </Link>
             <a
               href="#demo"
               style={{
-                padding: '14px 32px', borderRadius: '10px',
-                border: `1px solid ${c.border2}`, background: 'transparent',
-                color: c.text, fontSize: '1rem',
+                padding: '14px 32px', borderRadius: '999px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                fontSize: '1rem',
                 textDecoration: 'none', display: 'inline-block',
+                transition: 'border-color 0.25s cubic-bezier(.4,0,.2,1)',
               }}
             >
-              See it live
+              See a Live Demo ↓
             </a>
           </div>
 
-          <p style={{ fontSize: '0.8rem', color: c.dim }}>
-            <span style={{ color: c.muted }}>✦ No credit card required</span>
-            &nbsp;·&nbsp;
-            <span style={{ color: c.muted }}>10 free icebreakers on signup</span>
-            &nbsp;·&nbsp;
-            <span style={{ color: c.muted }}>Cancel anytime</span>
-          </p>
+          {/* Trust badges */}
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '20px', flexWrap: 'wrap',
+            }}
+          >
+            {['🔒 Secure Login', '🛡️ Data Encrypted', '✅ Cancel Anytime', '⚡ Results in Under 60 Seconds'].map((badge) => (
+              <span
+                key={badge}
+                style={{
+                  fontSize: '0.78rem',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
+                }}
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
 
-          {/* ── Preview table ── */}
+          {/* Preview table */}
           <div
             style={{
               marginTop: '64px',
-              background: c.card,
-              border: `1px solid ${c.border}`,
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
               borderRadius: '16px',
               overflow: 'hidden',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.4)',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.08)',
             }}
           >
             {/* macOS-style window bar */}
             <div
               style={{
-                padding: '12px 16px', background: c.surface,
-                borderBottom: `1px solid ${c.border}`,
+                padding: '12px 16px',
+                background: 'var(--bg-card-2)',
+                borderBottom: '1px solid var(--border)',
                 display: 'flex', alignItems: 'center', gap: '8px',
               }}
             >
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5a5a' }} />
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f5a623' }} />
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22d07a' }} />
-              <span style={{ fontSize: '0.75rem', color: c.muted, marginLeft: '8px' }}>
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-green)' }} />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '8px' }}>
                 icebreakers — results.csv
               </span>
             </div>
-
-            {/* Scrollable table */}
             <div style={{ overflowX: 'auto' }}>
-              <table
-                style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', minWidth: '560px' }}
-              >
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', minWidth: '560px' }}>
                 <thead>
                   <tr>
                     {['Lead', 'AI Icebreaker', 'Status', ''].map((h) => (
                       <th
                         key={h}
                         style={{
-                          color: c.muted, fontWeight: 500, textAlign: 'left',
-                          padding: '12px 16px', borderBottom: `1px solid ${c.border}`,
+                          color: 'var(--text-muted)', fontWeight: 500, textAlign: 'left',
+                          padding: '12px 16px', borderBottom: '1px solid var(--border)',
                           fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em',
                         }}
                       >
@@ -285,22 +339,20 @@ export default function Home() {
                       <td
                         style={{
                           padding: '14px 16px',
-                          borderBottom: 'rgba(255,255,255,0.04)',
+                          borderBottom: '1px solid var(--border)',
                           verticalAlign: 'top', minWidth: '180px',
-                          borderBottomWidth: '1px', borderBottomStyle: 'solid',
-                          borderBottomColor: 'rgba(255,255,255,0.04)',
                         }}
                       >
-                        <div style={{ fontWeight: 500, color: c.text }}>{row.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: c.muted, marginTop: '2px' }}>
+                        <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{row.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                           {row.meta}
                         </div>
                       </td>
                       <td
                         style={{
                           padding: '14px 16px', verticalAlign: 'top',
-                          color: '#b8f5d4', lineHeight: 1.5, maxWidth: '400px',
-                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          color: 'var(--purple-deep)', lineHeight: 1.5, maxWidth: '400px',
+                          borderBottom: '1px solid var(--border)',
                         }}
                       >
                         {row.icebreaker}
@@ -308,15 +360,15 @@ export default function Home() {
                       <td
                         style={{
                           padding: '14px 16px', verticalAlign: 'top', whiteSpace: 'nowrap',
-                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          borderBottom: '1px solid var(--border)',
                         }}
                       >
                         <span
                           style={{
                             display: 'inline-flex', alignItems: 'center', gap: '4px',
-                            fontSize: '0.72rem', color: c.green,
-                            background: 'rgba(34,208,122,0.1)',
-                            padding: '2px 8px', borderRadius: '100px',
+                            fontSize: '0.72rem', color: 'var(--accent-green)',
+                            background: 'rgba(34,197,94,0.1)',
+                            padding: '2px 8px', borderRadius: '999px',
                           }}
                         >
                           ✓ Clean
@@ -325,7 +377,7 @@ export default function Home() {
                       <td
                         style={{
                           padding: '14px 16px', verticalAlign: 'top',
-                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          borderBottom: '1px solid var(--border)',
                         }}
                       >
                         <PreviewTableCopy text={row.icebreaker} />
@@ -339,33 +391,32 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          LOGO BAR
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
-        <div
-          style={{
-            padding: '48px 0', textAlign: 'center',
-            borderTop: `1px solid ${c.border}`,
-            borderBottom: `1px solid ${c.border}`,
-          }}
-        >
+      {/* ══════════════════════════════════════════════════════════════════════
+          SOCIAL PROOF BAR
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div style={{ background: 'var(--bg-card-2)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '40px 0' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
           <p
             style={{
-              fontSize: '0.75rem', color: c.dim,
-              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '28px',
+              fontSize: '0.75rem', color: 'var(--text-muted)',
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '24px',
+              fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
             }}
           >
-            Works perfectly with your outreach stack
+            Built for modern sales teams using tools like:
           </p>
-          <div
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '40px', flexWrap: 'wrap',
-            }}
-          >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '36px', flexWrap: 'wrap' }}>
             {LOGOS.map((logo) => (
-              <span key={logo} style={{ fontSize: '0.88rem', color: c.dim, fontWeight: 500, letterSpacing: '0.05em' }}>
+              <span
+                key={logo}
+                style={{
+                  fontSize: '0.9rem',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                  fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif',
+                }}
+              >
                 {logo}
               </span>
             ))}
@@ -373,61 +424,105 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          STATS
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
-        <div
-          className="grid grid-cols-1 sm:grid-cols-3"
-          style={{
-            border: `1px solid ${c.border}`,
-            borderRadius: '16px', overflow: 'hidden', margin: '64px 0',
-          }}
-        >
-          {STATS.map((stat, i) => (
-            <div
-              key={stat.label}
-              style={{
-                padding: '36px', textAlign: 'center',
-                borderRight: i < STATS.length - 1 ? `1px solid ${c.border}` : 'none',
-                borderBottom: `1px solid ${c.border}`,
-              }}
-              className="last:border-b-0 sm:border-b-0"
-            >
-              <div
-                style={{
-                  fontFamily: "'Georgia', serif",
-                  fontSize: '2.8rem', color: c.green, lineHeight: 1, marginBottom: '6px',
-                }}
-              >
-                {stat.num}
-              </div>
-              <div style={{ fontSize: '0.85rem', color: c.muted }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          HOW IT WORKS
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section id="how" style={{ padding: '80px 0 100px' }}>
+      {/* ══════════════════════════════════════════════════════════════════════
+          PROBLEM SECTION
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 0', background: 'var(--bg)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
-
-          <div style={{ marginBottom: '56px' }}>
-            <SectionTag label="How it works" />
+          <div style={{ maxWidth: '640px' }}>
+            <p
+              style={{
+                fontSize: '0.72rem', color: 'var(--purple-main)',
+                textTransform: 'uppercase', letterSpacing: '0.15em',
+                marginBottom: '16px', fontWeight: 600,
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+              }}
+            >
+              <span style={{ width: '20px', height: '1px', background: 'var(--purple-main)', display: 'inline-block' }} />
+              The Problem
+            </p>
             <h2
               style={{
-                fontFamily: "'Georgia', 'Times New Roman', serif",
-                fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 400,
-                letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: '16px', color: c.text,
+                fontFamily: 'var(--font-sora), Sora, sans-serif',
+                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
+                fontWeight: 700, lineHeight: 1.2,
+                color: 'var(--text-primary)', marginBottom: '20px',
+              }}
+            >
+              Cold email is broken.
+              <br />
+              Generic openers get ignored.
+            </h2>
+            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '40px' }}>
+              &ldquo;Hope you&apos;re well&rdquo; doesn&apos;t work. Copy-paste templates are obvious. Manual personalization at scale takes hours.
+              Sales teams are stuck choosing between volume and relevance — until now.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: '20px' }}>
+            {[
+              { icon: '😴', title: 'Generic openers get deleted', body: 'Prospects can spot a template in the first five words. They delete it before reading the pitch.' },
+              { icon: '⏱️', title: 'Manual research doesn\'t scale', body: 'Researching every prospect takes 5–10 minutes each. That\'s hours lost per campaign.' },
+              { icon: '📋', title: 'Copy-paste hurts your brand', body: 'Lazy personalization ("[First Name], loved your work at [Company]") makes you look like spam.' },
+            ].map((item) => (
+              <div
+                key={item.title}
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '16px',
+                  padding: '28px',
+                }}
+              >
+                <div style={{ fontSize: '28px', marginBottom: '14px' }}>{item.icon}</div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
+                    fontSize: '1rem', fontWeight: 700,
+                    color: 'var(--text-primary)', marginBottom: '8px',
+                  }}
+                >
+                  {item.title}
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          HOW IT WORKS
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="how" style={{ padding: '80px 0', background: 'var(--bg-card-2)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ marginBottom: '56px' }}>
+            <p
+              style={{
+                fontSize: '0.72rem', color: 'var(--purple-main)',
+                textTransform: 'uppercase', letterSpacing: '0.15em',
+                marginBottom: '16px', fontWeight: 600,
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+              }}
+            >
+              <span style={{ width: '20px', height: '1px', background: 'var(--purple-main)', display: 'inline-block' }} />
+              How It Works
+            </p>
+            <h2
+              style={{
+                fontFamily: 'var(--font-sora), Sora, sans-serif',
+                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
+                fontWeight: 700, lineHeight: 1.2,
+                color: 'var(--text-primary)', marginBottom: '16px',
               }}
             >
               From lead list to{' '}
-              <em style={{ fontStyle: 'italic', color: c.green }}>personalized openers</em>
+              <span style={{ color: 'var(--purple-main)' }}>personalized openers</span>
               <br />in 3 steps
             </h2>
-            <p style={{ fontSize: '1rem', color: c.muted, maxWidth: '480px', lineHeight: 1.7 }}>
+            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', maxWidth: '480px', lineHeight: 1.7 }}>
               No prompt engineering. No copy-pasting. Just upload and go.
             </p>
           </div>
@@ -437,40 +532,45 @@ export default function Home() {
               <div
                 key={step.num}
                 style={{
-                  background: c.card,
-                  border: `1px solid ${c.border}`,
-                  borderRadius: '16px', padding: '32px',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '16px',
+                  padding: '32px',
                   position: 'relative', overflow: 'hidden',
                 }}
               >
-                {/* Large ghost number */}
                 <div
                   aria-hidden="true"
                   style={{
-                    fontFamily: "'Georgia', serif",
-                    fontSize: '4rem', color: 'rgba(34,208,122,0.07)',
-                    position: 'absolute', top: '16px', right: '20px',
-                    lineHeight: 1, pointerEvents: 'none', userSelect: 'none',
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
+                    fontSize: '4rem', color: 'rgba(107,78,255,0.07)',
+                    position: 'absolute', top: '12px', right: '18px',
+                    lineHeight: 1, pointerEvents: 'none', userSelect: 'none', fontWeight: 800,
                   }}
                 >
                   {step.num}
                 </div>
-
                 <div
                   style={{
                     width: '44px', height: '44px', borderRadius: '12px',
-                    background: c.greenDim,
-                    border: `1px solid ${c.greenBorder}`,
+                    background: 'var(--purple-s1)',
+                    border: '1px solid var(--purple-s2)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '20px', marginBottom: '20px',
                   }}
                 >
                   {step.icon}
                 </div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '10px', color: c.text }}>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
+                    fontSize: '1.05rem', fontWeight: 700,
+                    marginBottom: '10px', color: 'var(--text-primary)',
+                  }}
+                >
                   {step.title}
                 </h3>
-                <p style={{ fontSize: '0.88rem', color: c.muted, lineHeight: 1.65 }}>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
                   {step.description}
                 </p>
               </div>
@@ -479,64 +579,258 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          LIVE DEMO  (existing component — light bg section)
-      ══════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          LIVE DEMO
+      ══════════════════════════════════════════════════════════════════════ */}
       <section id="demo">
         <LiveDemo />
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          PRICING  (existing component — white bg section)
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <div style={{ background: '#ffffff' }}>
+      {/* ══════════════════════════════════════════════════════════════════════
+          FEATURES
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 0', background: 'var(--bg)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ marginBottom: '52px' }}>
+            <p
+              style={{
+                fontSize: '0.72rem', color: 'var(--purple-main)',
+                textTransform: 'uppercase', letterSpacing: '0.15em',
+                marginBottom: '16px', fontWeight: 600,
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+              }}
+            >
+              <span style={{ width: '20px', height: '1px', background: 'var(--purple-main)', display: 'inline-block' }} />
+              Features
+            </p>
+            <h2
+              style={{
+                fontFamily: 'var(--font-sora), Sora, sans-serif',
+                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
+                fontWeight: 700, lineHeight: 1.2,
+                color: 'var(--text-primary)', marginBottom: '16px',
+              }}
+            >
+              Everything you need.{' '}
+              <span style={{ color: 'var(--purple-main)' }}>Nothing you don&apos;t.</span>
+            </h2>
+            <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', maxWidth: '520px', lineHeight: 1.7 }}>
+              Built for sales professionals who want real personalization at scale — without the manual work.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" style={{ gap: '20px' }}>
+            {FEATURES.map((feat) => (
+              <div
+                key={feat.title}
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '16px',
+                  padding: '28px',
+                }}
+              >
+                <div style={{ fontSize: '28px', marginBottom: '14px' }}>{feat.icon}</div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
+                    fontSize: '1rem', fontWeight: 700,
+                    color: 'var(--text-primary)', marginBottom: '8px',
+                  }}
+                >
+                  {feat.title}
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                  {feat.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          SECURITY SECTION
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 0', background: 'var(--bg-card-2)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '52px' }}>
+            <p
+              style={{
+                fontSize: '0.72rem', color: 'var(--purple-main)',
+                textTransform: 'uppercase', letterSpacing: '0.15em',
+                marginBottom: '16px', fontWeight: 600,
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                justifyContent: 'center',
+              }}
+            >
+              <span style={{ width: '20px', height: '1px', background: 'var(--purple-main)', display: 'inline-block' }} />
+              Security
+            </p>
+            <h2
+              style={{
+                fontFamily: 'var(--font-sora), Sora, sans-serif',
+                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
+                fontWeight: 700, lineHeight: 1.2,
+                color: 'var(--text-primary)', marginBottom: '16px',
+              }}
+            >
+              Built With Security You Can Trust
+            </h2>
+            <p
+              style={{
+                fontSize: '1rem', color: 'var(--text-secondary)',
+                maxWidth: '520px', margin: '0 auto', lineHeight: 1.7,
+              }}
+            >
+              We take your data and your prospects&apos; data seriously. Here&apos;s exactly how we protect it.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" style={{ gap: '20px' }}>
+            {SECURITY_POINTS.map((point) => (
+              <div
+                key={point.title}
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '16px',
+                  padding: '28px',
+                }}
+              >
+                <div style={{ fontSize: '28px', marginBottom: '14px' }}>{point.icon}</div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
+                    fontSize: '1rem', fontWeight: 700,
+                    color: 'var(--text-primary)', marginBottom: '8px',
+                  }}
+                >
+                  {point.title}
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                  {point.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          USE CASES
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 0', background: 'var(--bg)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ marginBottom: '52px' }}>
+            <p
+              style={{
+                fontSize: '0.72rem', color: 'var(--purple-main)',
+                textTransform: 'uppercase', letterSpacing: '0.15em',
+                marginBottom: '16px', fontWeight: 600,
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+              }}
+            >
+              <span style={{ width: '20px', height: '1px', background: 'var(--purple-main)', display: 'inline-block' }} />
+              Use Cases
+            </p>
+            <h2
+              style={{
+                fontFamily: 'var(--font-sora), Sora, sans-serif',
+                fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)',
+                fontWeight: 700, lineHeight: 1.2,
+                color: 'var(--text-primary)', marginBottom: '16px',
+              }}
+            >
+              Built for every team
+              <br />
+              that sends cold email
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: '20px' }}>
+            {USE_CASES.map((uc) => (
+              <div
+                key={uc.role}
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '16px',
+                  padding: '28px',
+                }}
+              >
+                <div style={{ fontSize: '28px', marginBottom: '14px' }}>{uc.icon}</div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
+                    fontSize: '1rem', fontWeight: 700,
+                    color: 'var(--text-primary)', marginBottom: '8px',
+                  }}
+                >
+                  {uc.role}
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                  {uc.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          PRICING PREVIEW  (landing section)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div id="pricing" style={{ background: 'var(--bg-card-2)' }}>
         <PricingSection />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          FAQ  (existing component)
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <FaqSection />
+      {/* ══════════════════════════════════════════════════════════════════════
+          FAQ
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div id="faq">
+        <FaqSection />
+      </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════════════════════════════
           CTA BANNER
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section style={{ padding: '80px 0 100px', background: c.black }}>
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 0 100px', background: 'var(--bg)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
           <div
             style={{
-              background: 'linear-gradient(135deg, #1c1f2a 0%, rgba(34,208,122,0.04) 100%)',
-              border: '1px solid rgba(34,208,122,0.2)',
-              borderRadius: '24px', padding: 'clamp(40px, 6vw, 72px) clamp(24px, 4vw, 48px)',
-              textAlign: 'center', position: 'relative', overflow: 'hidden',
+              background: 'linear-gradient(135deg, var(--purple-s1) 0%, var(--bg-card) 100%)',
+              border: '1px solid var(--purple-s2)',
+              borderRadius: '24px',
+              padding: 'clamp(40px, 6vw, 72px) clamp(24px, 4vw, 48px)',
+              textAlign: 'center',
+              position: 'relative', overflow: 'hidden',
             }}
           >
-            {/* Bottom glow */}
             <div
+              aria-hidden="true"
               style={{
                 position: 'absolute', bottom: '-50px', left: '50%', transform: 'translateX(-50%)',
                 width: '400px', height: '200px',
-                background: 'radial-gradient(ellipse, rgba(34,208,122,0.12) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse, rgba(107,78,255,0.15) 0%, transparent 70%)',
                 pointerEvents: 'none',
               }}
             />
-
             <div style={{ position: 'relative' }}>
-              <SectionTag label="Get started today" center />
               <h2
                 style={{
-                  fontFamily: "'Georgia', 'Times New Roman', serif",
-                  fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 400,
-                  letterSpacing: '-0.02em', color: c.text, marginBottom: '16px',
+                  fontFamily: 'var(--font-sora), Sora, sans-serif',
+                  fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
+                  fontWeight: 700, letterSpacing: '-0.01em',
+                  color: 'var(--text-primary)', marginBottom: '16px',
                 }}
               >
                 Stop writing generic openers.
                 <br />
-                <em style={{ fontStyle: 'italic', color: c.green }}>Start getting replies.</em>
+                <span style={{ color: 'var(--purple-main)' }}>Start getting replies.</span>
               </h2>
-              <p style={{ color: c.muted, marginBottom: '36px', fontSize: '1.05rem' }}>
-                Join 500+ sales teams who replaced copy-paste with AI personalization.
-                Your first 10 icebreakers are free.
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '36px', fontSize: '1.05rem' }}>
+                Try IcebreakerAI free — no credit card required. Your first 10 icebreakers are on us.
               </p>
               <div
                 style={{
@@ -544,24 +838,27 @@ export default function Home() {
                   gap: '14px', flexWrap: 'wrap',
                 }}
               >
-                <a
+                <Link
                   href="/signup"
                   style={{
-                    padding: '14px 32px', borderRadius: '10px',
-                    background: c.green, color: '#0a0a0a',
-                    fontSize: '1rem', fontWeight: 600,
-                    textDecoration: 'none', display: 'inline-block',
+                    padding: '14px 32px', borderRadius: '999px',
+                    background: 'var(--purple-main)', color: '#ffffff',
+                    fontSize: '1rem', fontWeight: 600, textDecoration: 'none',
+                    boxShadow: '0 4px 20px rgba(107,78,255,0.35)',
+                    display: 'inline-block',
                   }}
                 >
-                  Generate free icebreakers →
-                </a>
+                  Start Free →
+                </Link>
                 <a
                   href="#demo"
                   style={{
-                    padding: '14px 32px', borderRadius: '10px',
-                    border: `1px solid ${c.border2}`, background: 'transparent',
-                    color: c.text, fontSize: '1rem',
-                    textDecoration: 'none', display: 'inline-block',
+                    padding: '14px 32px', borderRadius: '999px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-primary)',
+                    fontSize: '1rem', textDecoration: 'none',
+                    display: 'inline-block',
                   }}
                 >
                   Try the demo first

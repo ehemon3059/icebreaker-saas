@@ -1,52 +1,30 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { updateSession } from '@/lib/supabase/middleware'
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+  // Run Supabase session refresh + auth redirects first.
+  const response = await updateSession(request)
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+  // If the response is already a redirect (from updateSession), respect it.
+  if (response.status === 307 || response.status === 308) {
+    return response
+  }
 
-  // Refresh session — do NOT add logic between createServerClient and getUser()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    // Block unauthenticated access to /dashboard routes
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+  // For authenticated users accessing /dashboard, ensure geo verification is done.
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    const geoVerified = request.cookies.get('geo_verified')?.value
+    if (!geoVerified) {
       const url = request.nextUrl.clone()
-      url.pathname = '/login'
+      url.pathname = '/onboarding/country'
       return NextResponse.redirect(url)
-    }
-
-    // Block unauthenticated access to /api/generate
-    if (request.nextUrl.pathname.startsWith('/api/generate')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
   }
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/generate/:path*'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

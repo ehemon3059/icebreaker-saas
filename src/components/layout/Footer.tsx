@@ -1,29 +1,37 @@
 import Link from 'next/link'
 
-const columns = [
+const COLUMNS = [
   {
     heading: 'Product',
     links: [
-      { label: 'How it works', href: '/#how' },
-      { label: 'Live demo', href: '/#demo' },
-      { label: 'Pricing', href: '/#pricing' },
-      { label: 'Get started', href: '/signup' },
+      { label: 'How It Works', href: '/#how' },
+      { label: 'Live Demo', href: '/#demo' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Get Started', href: '/signup' },
     ],
   },
   {
-    heading: 'Industries',
+    heading: 'Company',
     links: [
-      { label: 'SaaS sales', href: '#' },
-      { label: 'Recruiting', href: '#' },
-      { label: 'Real estate', href: '#' },
-      { label: 'Agencies', href: '#' },
+      { label: 'About Us', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Blog', href: '#' },
     ],
   },
   {
     heading: 'Legal',
     links: [
-      { label: 'Terms of Service', href: '/terms' },
       { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Refund Policy', href: '/refund' },
+    ],
+  },
+  {
+    heading: 'Support',
+    links: [
+      { label: 'support@icebreakerAI.com', href: 'mailto:support@icebreakerAI.com' },
+      { label: 'hello@icebreakerAI.com', href: 'mailto:hello@icebreakerAI.com' },
+      { label: 'FAQ', href: '/#faq' },
     ],
   },
 ]
@@ -32,9 +40,9 @@ export default function Footer() {
   return (
     <footer
       style={{
-        borderTop: '1px solid rgba(255,255,255,0.08)',
-        padding: '48px 0 32px',
-        background: '#0a0a0a',
+        borderTop: '1px solid var(--border)',
+        padding: '56px 0 32px',
+        background: 'var(--bg-card)',
       }}
     >
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
@@ -51,28 +59,30 @@ export default function Footer() {
           }}
         >
           {/* Brand */}
-          <div>
+          <div style={{ maxWidth: '240px' }}>
             <Link
               href="/"
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
-                textDecoration: 'none', marginBottom: '12px',
+                textDecoration: 'none', marginBottom: '14px',
               }}
             >
               <div
                 style={{
                   width: '30px', height: '30px', borderRadius: '8px',
-                  background: '#22d07a',
+                  background: 'var(--purple-main)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '15px',
+                  fontSize: '15px', flexShrink: 0,
                 }}
               >
                 ❄
               </div>
               <span
                 style={{
-                  fontFamily: "'Georgia', 'Times New Roman', serif",
-                  fontSize: '1.1rem', color: '#e8eaf2', fontWeight: 400,
+                  fontFamily: 'var(--font-sora), Sora, sans-serif',
+                  fontSize: '1.05rem',
+                  color: 'var(--text-primary)',
+                  fontWeight: 600,
                 }}
               >
                 IcebreakerAI
@@ -80,8 +90,9 @@ export default function Footer() {
             </Link>
             <p
               style={{
-                fontSize: '0.85rem', color: '#7a7f96',
-                maxWidth: '240px', lineHeight: '1.6',
+                fontSize: '0.85rem',
+                color: 'var(--text-muted)',
+                lineHeight: '1.65',
               }}
             >
               AI-powered cold email personalization for sales teams, recruiters, and agencies worldwide.
@@ -89,14 +100,18 @@ export default function Footer() {
           </div>
 
           {/* Link columns */}
-          <div style={{ display: 'flex', gap: '56px', flexWrap: 'wrap' }}>
-            {columns.map((col) => (
+          <div style={{ display: 'flex', gap: '48px', flexWrap: 'wrap' }}>
+            {COLUMNS.map((col) => (
               <div key={col.heading}>
                 <h4
                   style={{
-                    fontSize: '0.75rem', color: '#e8eaf2',
-                    textTransform: 'uppercase', letterSpacing: '0.1em',
-                    marginBottom: '14px', fontWeight: 600,
+                    fontSize: '0.72rem',
+                    color: 'var(--text-primary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginBottom: '14px',
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-sora), Sora, sans-serif',
                   }}
                 >
                   {col.heading}
@@ -106,8 +121,12 @@ export default function Footer() {
                     key={link.label}
                     href={link.href}
                     style={{
-                      display: 'block', fontSize: '0.85rem',
-                      color: '#7a7f96', textDecoration: 'none', marginBottom: '10px',
+                      display: 'block',
+                      fontSize: '0.85rem',
+                      color: 'var(--text-muted)',
+                      textDecoration: 'none',
+                      marginBottom: '10px',
+                      transition: 'color 0.25s cubic-bezier(.4,0,.2,1)',
                     }}
                   >
                     {link.label}
@@ -121,20 +140,31 @@ export default function Footer() {
         {/* Bottom row */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '12px',
             paddingTop: '24px',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
           }}
         >
-          <p style={{ fontSize: '0.8rem', color: '#3e4259' }}>
-            © {new Date().getFullYear()} IcebreakerAI. All rights reserved.
-          </p>
-          <p style={{ fontSize: '0.8rem', color: '#3e4259' }}>
-            Built with ♥ in Bangladesh 🇧🇩 · Serving the world 🌍
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              IcebreakerAI · Founder: Eh Emon · Bangladesh (Remote Team, Operating Globally)
+            </p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              © 2026 IcebreakerAI. All rights reserved.
+            </p>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+            AI-generated content is reviewed by users before sending. IcebreakerAI does not send emails on your behalf.
           </p>
         </div>
 

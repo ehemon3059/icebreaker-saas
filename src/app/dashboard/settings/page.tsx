@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { PLANS } from '@/lib/billing/plans'
 import CreditsIndicator from '@/components/billing/CreditsIndicator'
-import CheckoutButton from '@/components/billing/CheckoutButton'
 
 // ─── Page (Server Component) ──────────────────────────────────────────────────
 
@@ -44,7 +43,6 @@ export default async function SettingsPage() {
 
   const plan = dbUser.subscriptionTier.toUpperCase()
   const isPaid = plan === 'PRO' || plan === 'SCALE'
-  const storeUrl = process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_URL ?? '#'
 
   // Next reset: prefer subscription period end, fall back to manual reset date
   const resetDate = subscription?.currentPeriodEnd ?? dbUser.creditsResetAt
@@ -99,22 +97,15 @@ export default async function SettingsPage() {
         <Section title="Subscription">
           {isPaid ? (
             <div className="space-y-4">
-              <a
-                href={`${storeUrl}/billing`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
-              >
-                Manage Subscription
-                <ExternalLinkIcon />
-              </a>
-              <p className="text-xs text-gray-400 max-w-sm">
-                You can cancel anytime from the billing portal. You&apos;ll keep access until
-                the end of your current billing period
-                {subscription?.currentPeriodEnd
-                  ? ` (${formatDate(subscription.currentPeriodEnd)})`
-                  : ''}.
+              <p className="text-sm text-gray-500">
+                You&apos;re on the <span className="font-medium">{plan}</span> plan.
+                Billing management will be available soon.
               </p>
+              {subscription?.currentPeriodEnd && (
+                <p className="text-xs text-gray-400">
+                  Current period ends {formatDate(subscription.currentPeriodEnd)}.
+                </p>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -128,15 +119,14 @@ export default async function SettingsPage() {
                     <p className="text-sm text-gray-500 mb-3">
                       ${p.price}/mo &mdash; {p.credits.toLocaleString()} credits
                     </p>
-                    <CheckoutButton
-                      variantId={p.variantId!}
-                      userId={user.id}
-                      userEmail={dbUser.email}
-                      label={`Upgrade to ${p.name}`}
-                      className={`w-full rounded-lg py-2 text-sm font-semibold text-white transition-colors ${
-                        p.slug === 'PRO' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-900 hover:bg-gray-700'
+                    <button
+                      disabled
+                      className={`w-full rounded-lg py-2 text-sm font-semibold text-white opacity-50 cursor-not-allowed ${
+                        p.slug === 'PRO' ? 'bg-indigo-600' : 'bg-gray-900'
                       }`}
-                    />
+                    >
+                      Coming Soon
+                    </button>
                   </div>
                 ))}
               </div>

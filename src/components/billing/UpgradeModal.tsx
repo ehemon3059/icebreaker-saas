@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import CheckoutButton from './CheckoutButton'
 import { PLANS } from '@/lib/billing/plans'
 
 export interface UpgradeModalProps {
@@ -22,10 +21,7 @@ export default function UpgradeModal({
   currentPlan,
   creditsUsed,
   creditLimit,
-  userId,
-  userEmail,
 }: UpgradeModalProps) {
-  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return
     function onKeyDown(e: KeyboardEvent) {
@@ -40,17 +36,14 @@ export default function UpgradeModal({
   const normalizedPlan = currentPlan.toUpperCase()
 
   return (
-    // Backdrop
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in duration-150"
       onClick={onClose}
     >
-      {/* Card — stop propagation so clicks inside don't close */}
       <div
         className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
@@ -59,7 +52,6 @@ export default function UpgradeModal({
           <XIcon />
         </button>
 
-        {/* Header */}
         <div className="mb-6 text-center">
           <div className="mb-3 text-3xl">🚀</div>
           <h2 className="text-xl font-bold text-gray-900">You&apos;ve reached your limit</h2>
@@ -70,7 +62,6 @@ export default function UpgradeModal({
           </p>
         </div>
 
-        {/* Plan cards */}
         <div className="space-y-3">
           {UPGRADE_PLANS.filter((plan) => plan.slug !== normalizedPlan).map((plan) => (
             <div
@@ -87,22 +78,18 @@ export default function UpgradeModal({
                   ${plan.price}/mo &mdash; {plan.credits.toLocaleString()} icebreakers
                 </p>
               </div>
-              <CheckoutButton
-                variantId={plan.variantId!}
-                userId={userId}
-                userEmail={userEmail}
-                label={`Upgrade to ${plan.name}`}
-                className={`ml-4 shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors ${
-                  plan.slug === 'PRO'
-                    ? 'bg-indigo-600 hover:bg-indigo-700'
-                    : 'bg-gray-900 hover:bg-gray-700'
+              <button
+                disabled
+                className={`ml-4 shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white opacity-50 cursor-not-allowed ${
+                  plan.slug === 'PRO' ? 'bg-indigo-600' : 'bg-gray-900'
                 }`}
-              />
+              >
+                Coming Soon
+              </button>
             </div>
           ))}
         </div>
 
-        {/* Dismiss */}
         <div className="mt-5 text-center">
           <button
             onClick={onClose}

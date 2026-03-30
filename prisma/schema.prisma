@@ -58,8 +58,10 @@ model User {
   creditsUsed      Int       @default(0)
   creditsResetAt   DateTime?                  // Reset on billing cycle renewal
 
-  // ── Lemon Squeezy ──
-  lsCustomerId String? @unique // Lemon Squeezy customer ID
+  // ── Geo Verification ──
+  country          String?          // user-selected country code (e.g. "IN")
+  locationVerified Boolean          @default(false)
+  ipCountry        String?          // IP-detected country at signup
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -80,14 +82,11 @@ model User {
 /// clean webhook handling and a complete billing audit trail.
 /// User.plan stores the current plan for fast access checks.
 model Subscription {
-  id                     String    @id @default(cuid())
-  lemonSqueezyId         String    @unique           // Lemon Squeezy subscription ID
-  lemonSqueezyCustomerId String?                     // Lemon Squeezy customer ID
-  variantId              String                      // Which plan variant they purchased
-  status                 String    @default("active") // "active" | "cancelled" | "past_due" | "paused" | "expired"
-  plan                   String    @default("FREE")  // "FREE" | "PRO" | "SCALE"
-  currentPeriodEnd       DateTime?
-  cancelledAt            DateTime?
+  id               String    @id @default(cuid())
+  status           String    @default("active") // "active" | "cancelled" | "past_due" | "paused" | "expired"
+  plan             String    @default("FREE")   // "FREE" | "PRO" | "SCALE"
+  currentPeriodEnd DateTime?
+  cancelledAt      DateTime?
 
   // ── Foreign Keys ──
   userId String @unique // One subscription per user
@@ -98,7 +97,6 @@ model Subscription {
   // ── Relations ──
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([lemonSqueezyId])
   @@index([userId])
   @@map("subscriptions")
 }
